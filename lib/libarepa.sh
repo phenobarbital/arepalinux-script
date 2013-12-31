@@ -30,6 +30,10 @@ if [ -z $(which lsb_release) ]; then
 	echo "arepalinux warning: lsb-release is required"
 	$APT -y install lsb-release
 fi
+if [ -z $(which lshw) ]; then
+	echo "arepalinux warning: lshw is required"
+	$APT -y install lsb-release
+fi
 
 logMessage () {
   scriptname=$(basename $0)

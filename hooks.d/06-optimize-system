@@ -38,10 +38,6 @@ cat <<EOF > /sbin/eth0.sh
 EOF
 chmod a+x /sbin/eth0.sh
 
-# disable ipv6
-sed -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 ipv6.disable=1\"/" /etc/default/grub
-update-grub
-
 # configure limits
 cat <<EOF > /etc/security/limits.d/stack.conf
 # nofile

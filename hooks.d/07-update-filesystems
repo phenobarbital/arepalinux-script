@@ -26,6 +26,7 @@ sed -i -e "/\/boot/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
 
 # cambiar a defaults
 # $SED -i -e "s/defaults,noatime/${EXT4_FLAGS}/" /etc/fstab
+# awk '/\/dev\/appvg\/home/{$4="defaults,nodev"}{print}' /etc/fstab
 
 e2fsck -fDC0 $BOOT
 

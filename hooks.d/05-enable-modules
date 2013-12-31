@@ -33,6 +33,7 @@ fi
 echo "blacklist pcspkr" > /etc/modprobe.d/blacklist-pcspkr.conf
 
 # list all drivers in system
+# TODO build especific options for various hardware
 for device in $(lspci | awk '{ print $1 }'); do
     module=$(lspci -v -s $device | grep Kernel | cut -d ':' -f2 | tr -d ' ')
     if [ ! -z "$module" ]; then

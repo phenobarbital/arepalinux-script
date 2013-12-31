@@ -1,0 +1,35 @@
+#!/bin/bash
+# 30-security
+#
+#  Ensure all security software (fail2ban, psad, rkhunter) is installed and configured
+#  in this system
+#
+
+# Don't allow any nut to kill the server
+perl -npe 's/ca::ctrlaltdel:\/sbin\/shutdown/#ca::ctrlaltdel:\/sbin\/shutdown/' -i /etc/inittab
+
+# Passwords expire every 180 days
+perl -npe 's/PASS_MAX_DAYS\s+99999/PASS_MAX_DAYS 180/' -i /etc/login.defs
+
+# Passwords may only be changed once a day
+perl -npe 's/PASS_MIN_DAYS\s+0/PASS_MIN_DAYS 1/g' -i /etc/login.defs
+
+# Login retries change to 6
+perl -npe 's/LOGIN_RETRIES\s+5/LOGIN_RETRIES 6/g' -i /etc/login.defs
+
+# kick off idle users:
+message "Idle users will be removed after 15 minutes"
+
+echo "readonly TMOUT=900" >> /etc/profile.d/os-security.sh
+echo "readonly HISTFILE" >> /etc/profile.d/os-security.sh
+
+chmod +x /etc/profile.d/os-security.sh
+
+
+# install fail2ban
+
+
+# install psad
+
+
+# install 

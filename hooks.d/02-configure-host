@@ -29,3 +29,12 @@ sed -i -e '/ *#/d; /^ *$/d' /etc/hosts
 echo " " >> /etc/hosts
 echo "# direccion ip del host" >> /etc/hosts
 echo "$LAN_IPADDR $SERVERNAME $NAME" >> /etc/hosts
+
+
+# configure hostname
+
+
+# configure domain
+
+
+# configure mailname
