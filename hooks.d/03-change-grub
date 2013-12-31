@@ -15,7 +15,7 @@ if [ -z "`grep 'modeset' /etc/default/grub`" ]; then
 info "Detecting Video Card information, please wait ..."
 # Video
 videodriver=$(lshw -class display -disable dmi -quiet | grep configuration | awk '{ print $2}' | cut -d '=' -f2 | tr -d ' ')
-case "$cpumodel" in
+case "$videodriver" in
     "i915")
         sed -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 $GRUB_INTEL\"/" /etc/default/grub;;
     "radeon")
