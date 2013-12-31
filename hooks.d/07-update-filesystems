@@ -1,0 +1,59 @@
+#!/bin/bash
+# 07-update-filesystems
+#
+# optimice filesystem access
+#
+
+# hacer una copia de seguridad del fstab
+cp -p /etc/fstab /etc/fstab.orig
+
+# umount and optimice boot
+BOOT=$(cat /etc/mtab | grep "/boot " | awk '{print $1}')
+HOME=$(cat /etc/mtab | grep "/home " | awk '{print $1}')
+
+# check boot
+umount $BOOT
+e2fsck -f $BOOT
+
+# convert to ext4
+tune2fs -O extents,uninit_bg,dir_index $BOOT
+
+# disable journal
+tune2fs -O ^has_journal $BOOT
+
+# cambiar el fstab a ext4
+sed -i -e "/\/boot/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
+
+# cambiar a defaults
+# $SED -i -e "s/defaults,noatime/${EXT4_FLAGS}/" /etc/fstab
+
+e2fsck -fDC0 $BOOT
+
+# HOME
+umount $HOME
+e2fsck -f $HOME
+
+# convert to ext4
+tune2fs -O extents,uninit_bg,dir_index $HOME
+
+# cambiar el fstab
+sed -i -e "/\/home/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
+
+# cambiar a defaults
+# $SED -i -e "s/defaults,noatime/${EXT4_FLAGS}/" /etc/fstab
+
+e2fsck -fDC0 $HOME
+
+# add ext4 and xfs flags to fstab entries
+# TODO
+# obtener el blkid
+#UUID=$(blkid | grep sda$NUMBER | grep -oP 'UUID=[0-9a-zA-Z"-]+' | cut -d '"' -f2)
+
+# comentar la anterior linea de HOME
+#$SED -i -e "/\/home/ s/UUID=/#UUID=/" /etc/fstab
+
+# y agregar el nuevo HOME
+#$ECHO "UUID=$UUID /home ext4  $HOME_FLAGS,errors=remount-ro 0 2" >> /etc/fstab
+
+# remount filesystem
+mount -a

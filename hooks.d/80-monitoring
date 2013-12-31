@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# 80-monitoring
+# enable sysstat and snmpd on system
+#
+
+# install and enable sysstat
+install_package sysstat
+sed -i 's/ENABLED="false"/ENABLED="true"/' /etc/default/sysstat
+service sysstat restart
+
+# snmpd
+install_package snmp snmpd snmp-mibs-downloader
+# enable snmp daemon
+sed -i -e "s/SNMPDRUN=no/SNMPDRUN=yes/" /etc/default/snmpd
+# eliminar las lineas y comentarios:
+sed -i -e '/ *#/d; /^ *$/d' /etc/snmp/snmpd.conf
+# listen on all interfaces:
+sed -i "s/^agentAddress.*$/agentAddress  udp:0.0.0.0:161/" /etc/snmp/snmpd.conf
+# incorporar todas las vistas:
+sed -i -e "s/view   systemonly  included   .1.3.6.1.2.1.1.*$/view all included  .1\nview   systemonly  included  .1         80/" /etc/snmp/snmpd.conf
+# configure user
+sed -i "s/^sysLocation.*$/sysLocation $DOMAIN $NAME/" /etc/snmp/snmpd.conf
+sed -i "s/^sysContact.*$/sysContact $ACCOUNT <$MAIL>/" /etc/snmp/snmpd.conf
+service snmpd restart
+
+# configure smartmontools and sensors
+install_package smartmontools lm-sensors

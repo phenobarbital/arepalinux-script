@@ -1,0 +1,57 @@
+#!/bin/bash
+# 06-optimize-system
+#
+# optimize disk, network and other utilities
+#
+
+# Agregar rc.local
+
+cat <<EOF > /etc/rc.local
+#!/bin/sh -e
+#
+# rc.local
+#
+# optimizacion del disco
+/bin/bash /sbin/optimicedisk.sh
+# compartir internet a las LXC
+/bin/bash /sbin/compartir_internet
+exit 0
+EOF
+chmod a+x /etc/rc.local
+
+cat <<EOF > /sbin/compartir_internet
+#!/bin/bash
+iptables -I FORWARD -m physdev --physdev-is-bridged -j ACCEPT
+iptables -P FORWARD ACCEPT
+EOF
+chmod a+x /sbin/compartir_internet
+
+# optimize disk settings
+install_package hdparm
+
+cp files/optimicedisk.sh /sbin/optimicedisk.sh
+chmod a+x /sbin/optimicedisk.sh
+
+# network
+cat <<EOF > /sbin/eth0.sh
+/sbin/ethtool -K eth0 tso off
+EOF
+chmod a+x /sbin/eth0.sh
+
+# disable ipv6
+sed -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 ipv6.disable=1\"/" /etc/default/grub
+update-grub
+
+# configure limits
+cat <<EOF > /etc/security/limits.d/stack.conf
+# nofile
+root               soft    nofile            131072
+root               hard    nofile            131072
+*               soft    nofile            131072
+*               hard    nofile            131072
+# stack
+root            soft    stack            16384
+root            hard    stack            16384
+*               soft    stack            16384
+*               hard    stack            16384
+EOF

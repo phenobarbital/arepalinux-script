@@ -1,0 +1,71 @@
+#!/bin/bash
+# 05-enable-modules
+#
+#  This script ensures that required kernel modules will be started
+#
+
+# CPU
+cpumodel=$(lscpu | grep Vendor | head -n1 | cut -d ':' -f2 | tr -d ' ')
+case "$cpumodel" in
+    "GenuineIntel")
+        install_package intel-microcode;;
+    "AuthenticAMD")
+        install_package amd64-microcode;;
+    *)
+    error "unknown CPU model $cpumodel"
+    exit 1;;
+esac
+
+# add all required modules
+modules=$(grep "ip_tables" /etc/modules)
+
+if [ -z "$modules" ]; then
+cat <<EOF >> /etc/modules
+ip_tables
+ip_conntrack
+iptable_filter
+iptable_nat
+ipt_physdev
+EOF
+fi
+
+# blacklist pc speaker
+echo "blacklist pcspkr" > /etc/modprobe.d/blacklist-pcspkr.conf
+
+# list all drivers in system
+for device in $(lspci | awk '{ print $1 }'); do
+    module=$(lspci -v -s $device | grep Kernel | cut -d ':' -f2 | tr -d ' ')
+    if [ ! -z "$module" ]; then
+        # TODO: call for especific options for every kernel module
+        firmware=$(modinfo $module | grep firmware)
+        if [ -n "$firmware" ]; then
+            # TODO: determine firmware for every module
+            case "$module" in
+            "r8169")
+                install_package firmware-realtek;;
+            "ath9k")
+                install_package firmware-atheros;;
+            "iwlwifi")
+                install_package firmware-iwlwifi;;
+            "bnx2")
+                install_package firmware-bnx2;;
+            "bnx2x")
+                install_package firmware-bnx2x;;
+            *)
+                install_package firmware-linux-nonfree;;
+            esac
+        fi
+    fi
+done
+
+# install firmware free and non-free
+install_package firmware-linux-free firmware-linux-nonfree
+
+# AMD and Intel especific options
+
+
+# Prepare for Video Support
+if [ "$cpumodel" == "GenuineIntel" ]; then
+    echo "INTEL_BATCH=1" >> /etc/environment
+fi
+# discover video display model

@@ -1,0 +1,66 @@
+#!/bin/bash
+# 12-configure-ssh
+#
+# install and configure SSH
+#
+
+ssh_port=$((RANDOM%65000+100))
+$APT -y install ssh openssh-server sudo
+
+#
+# Generate the Host RSA Key
+#
+if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+	if ssh-keygen -t rsa -N "" -f /etc/ssh/ssh_host_rsa_key -C "root@$NAME"; then
+		message "successfully generated Host RSA"
+	else
+		message "failed to generate Host RSA Key"
+	fi
+fi
+
+#
+# Generate the Host DSA Key
+#
+if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
+	if ssh-keygen -t dsa -N "" -f /etc/ssh/ssh_host_dsa_key -C "root@$NAME"; then
+		message "successfully generetaged Host DSA"
+	else
+		message "failed to generate Host DSA Key"
+	fi
+fi
+
+if [ -z "`grep 'PermitRootLogin no' /etc/ssh/sshd_config`" ]; then
+  # change SSH port
+  sed -i "s/Port.*$/Port $ssh_port/" /etc/ssh/sshd_config
+  warning "SSH port configured to $ssh_port"
+
+  # habilitar acceso root
+  sed -i "s/PermitRootLogin.*/PermitRootLogin no/" /etc/ssh/sshd_config
+
+# Habilitar el acceso del grupo sudo
+cat <<EOF >>/etc/ssh/sshd_config
+AllowGroups sudo
+EOF
+
+  # fix permissions
+  chmod 440 /etc/sudoers
+
+  # add user to sudo group
+  /usr/sbin/adduser $ACCOUNT sudo
+
+# Configurar el banner SSH
+cat <<EOF >>/etc/ssh/sshd_banner
+************************************************
+
+Bienvenido a un equipo ArepaLinux $VERSION
+$DIST GNU/Linux $SUITE
+
+*************************************************
+EOF
+
+  # cambiar el banner
+  sed -i -e "s/^#Banner \/etc\/issue.net/Banner \/etc\/ssh\/sshd_banner/" /etc/ssh/sshd_config
+fi
+
+# restart SSH
+service ssh restart

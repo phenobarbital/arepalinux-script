@@ -1,0 +1,38 @@
+#!/bin/bash -e
+# 98-configure-users
+#
+# configure system user account
+#
+
+install_package libpam-cracklib libpam-mkhomedir
+
+# crear grupo y usuario de $SUPPORT
+/usr/sbin/groupadd --gid 1100 $SUPPORT
+/usr/sbin/useradd --uid 1100 --create-home -d /home/$SUPPORT -s /bin/bash -g $SUPPORT $SUPPORT
+
+info "User '$SUPPORT' is disabled, please set user password"
+
+# agregar usuario al grupo sudo
+adduser $SUPPORT $SUPPORT
+adduser $SUPPORT sudo
+
+# == Configure pam.access ==
+
+if [ -z "`grep 'permitir' /etc/security/access.conf`" ]; then
+cat <<EOF >> /etc/security/access.conf
+# permitir exclusivamente accesos locales a root
++ : root : cron crond :0 tty1 tty2 tty3 tty4 tty5 tty6
++ : root : 127.0.0.1
+- : root : ALL
+
+# permitir accesos a los grupos $SUPPORT y sudo
++ : @sudo @$SUPPORT : cron crond :0 tty1 tty2 tty3 tty4 tty5 tty6
++ : @sudo @$SUPPORT : 127.0.0.0/24
++ : @sudo @$SUPPORT : 192.168.0.0/24
++ : @sudo @$SUPPORT : 172.16.30.0/24
+- : @sudo @$SUPPORT : ALL
+
+# no aceptar accesos a mas nadie
+- : ALL : ALL
+EOF
+fi

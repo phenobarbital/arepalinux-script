@@ -1,0 +1,8 @@
+#!/bin/bash -e
+# 10-configure-network
+#
+# configure network options for Debian Servers (bridge, openvswitch, etc)
+#
+# Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
+# términos de la Licencia Pública General de GNU (versión 3).
+

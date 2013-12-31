@@ -1,0 +1,72 @@
+#!/bin/bash
+# 20-configure-apt
+#
+# This script configure apt
+#
+
+
+#
+# Setup the sources.list file for new installations of Debian GNU/Linux.
+#
+
+# disable apt sources.list base
+sed -i 's/^deb/#deb/' /etc/apt/sources.list
+
+# erase all .list repositories
+rm -f /etc/apt/sources.list.d/*.list
+
+# generate new repositories
+if [ "$REPO_TYPE" == "local" ]; then
+mirror="file://$REPO_URL/debian/"
+else
+mirror="http://$REPO_URL/debian/"
+fi
+
+# oficial repositories
+cat <<E_O_APT > /etc/apt/sources.list.d/debian.list
+# oficial
+deb $mirror $SUITE $REPO_SECTIONS
+# updates
+#deb http://http.debian.net/debian $SUITE-updates main
+# security
+#deb http://security.debian.org/ $SUITE/updates main
+E_O_APT
+
+# backport repositories
+cat <<E_O_APT > /etc/apt/sources.list.d/backports.list
+deb $mirror $SUITE-backports $REPO_SECTIONS
+E_O_APT
+
+cat <<EOF > /etc/apt/apt.conf.d/10-$DIST
+Acquire::PDiffs "false";
+// Acquire::Language "none";
+APT::Clean-Installed "true";
+APT::Get:AutomaticRemove "true";
+APT::Get::HideAutoRemove "false";
+APT::Get:Show-Upgraded "true";
+APT::Install-Recommends "false";
+EOF
+
+cat <<EOF > /etc/apt/apt.conf.d/80-update
+Acquire::Check-Valid-Until "false";
+EOF
+
+cat <<EOF > /etc/apt/preferences.d/$DIST.pref
+Package: *
+Pin: release n=$SUITE
+Pin-Priority: 999
+
+Package: *
+Pin: release n=$SUITE-updates
+Pin-Priority: 999
+EOF
+
+cat <<EOF > /etc/apt/apt.conf.d/90-recommends
+APT::Install-Recommends "false";
+EOF
+
+#
+#  Now that the sources have been setup make sure the system is up to date.
+#
+$APT update
+$APT upgrade -y

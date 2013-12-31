@@ -1,0 +1,12 @@
+# local
+deb file:///opt/repo/mirrors/debian/ wheezy main contrib non-free
+
+# multimedia
+# deb file:///opt/repo/mirrors/multimedia/ sid main non-free
+
+# kernel
+# deb file:///opt/repo/mirrors/liquorix/ sid main
+# mint
+# deb file:///opt/repo/mirrors/mint/ debian main upstream import romeo
+# mate
+# deb file:///opt/repo/mirrors/mate/ jessie main

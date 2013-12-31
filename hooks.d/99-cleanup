@@ -1,0 +1,51 @@
+#!/bin/bash
+# 99-cleanup
+#
+# Basic security and cleanup options
+#
+#
+
+# remover usuarios innecesarios:
+for u in sync games news uucp gnats; do echo "erasing user $u"; userdel $u;
+done
+
+# deshabilitar shell para algunos usuarios no necesarios:
+for u in backup sys bin proxy; do chsh -s /bin/false $u; done
+
+# remover suid bit a "su"
+chmod -s /bin/su
+
+# y a passwd
+chmod -s /usr/bin/passwd
+chmod -s /usr/bin/wall
+
+# asegurar archivos basicos:
+chmod 027 /etc/profile /etc/login.defs /etc/init.d/rc
+
+# asegurar tmp
+if [ -z "`grep 'secure tmp' /etc/fstab`" ]; then
+cat <<EOF >> /etc/fstab
+# secure tmp
+tmpfs /tmp tmpfs nosuid,noexec,nodev,rw 0 0
+tmpfs /run tmpfs rw,nosuid,noexec,nodev,relatime,size=188756k,mode=755 0 0
+EOF
+fi
+
+# cleanup system
+install_package localepurge deborphan
+$APTITUDE -y purge $(deborphan --libdevel) $(deborphan --find-config)
+$APTITUDE -y purge libgcc-4.7-dev
+
+#
+# clean apt cache
+$APT -y autoremove
+$APT -y clean
+$APTITUDE clean
+# protect dash and locales
+/bin/echo locales hold | /usr/bin/dpkg --set-selections
+/bin/echo dash hold | /usr/bin/dpkg --set-selections
+
+#  Remove disable-daemons script (if present)
+if [ -x "/usr/sbin/policy-rc.d" ]; then
+	rm -f "/usr/sbin/policy-rc.d"
+fi
