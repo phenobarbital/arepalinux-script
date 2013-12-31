@@ -1,4 +1,7 @@
-arepalinux-script
-=================
+ArepaLinux Script version 0.1
+-----------------------------
 
-Arepalinux script base (install a Debian GNU/Linux secure server/workstation)
+ArepaLinux script is a Debian-based script for automated installation of basic
+servers, appliances y high-end Debian workstations.
+
+Install, configure, optimice and secure every aspect in Debian System.
