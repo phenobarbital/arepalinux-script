@@ -6,3 +6,62 @@
 # Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
 # términos de la Licencia Pública General de GNU (versión 3).
 
+install_package bridge-utils openvswitch-switch
+
+# backup interfaces
+cp /etc/network/interfaces /etc/network/interfaces.orig
+
+# get first interface
+firstiface=$(ip route | grep default |  awk '{ print $5}' | tr -d ' ')
+# network options
+ipaddr=$(get_ip $firstiface)
+netmask=$(get_netmask $firstiface)
+network=$(get_network $GATEWAY $netmask)
+broadcast=$(get_broadcast $firstiface)
+
+# add loopback configuration
+cat <<EOF > /etc/network/interfaces
+# The loopback network interface
+auto lo
+iface lo inet loopback
+EOF
+
+# add bridge net configuration
+cat <<EOF >> /etc/network/interfaces
+
+# The lan bridge interface
+auto $BRIDGENAME
+iface $BRIDGENAME inet static
+    address $ipaddr
+    network $network
+    netmask $netmask
+    broadcast  $broadcast
+    gateway $GATEWAY
+    # dns-nameservers
+    dns-domain $DOMAIN
+    dns-search $DOMAIN
+    dns-nameservers 127.0.0.1
+    # bridge info
+    bridge-ports $firstiface
+    bridge-maxwait 1
+    bridge-stp off
+    bridge-fd 0
+    pre-up /sbin/eth0.sh
+EOF
+
+# add bridge internal configuration
+cat <<EOF >> /etc/network/interfaces
+
+# The internal lan interface
+auto lan0
+iface lan0 inet static
+    address 172.16.30.1
+    network 172.16.30.0
+    netmask 255.255.255.0
+    broadcast  172.16.30.255
+    # bridge info
+    bridge-ports none
+    bridge-maxwait 1
+    bridge-stp on
+    bridge-fd 0
+EOF

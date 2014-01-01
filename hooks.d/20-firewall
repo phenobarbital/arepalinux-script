@@ -20,7 +20,7 @@ cat > /etc/shorewall/interfaces << EOF
 FORMAT 2
 #ZONE   INTERFACE   OPTIONS
 lan     lan0             routefilter,tcpflags,nosmurfs,logmartians,sourceroute=0
-net     br0          routefilter,routeback,bridge,tcpflags,nosmurfs,sourceroute=0
+net     $BRIDGENAME        routefilter,routeback,bridge,tcpflags,nosmurfs,sourceroute=0
 EOF
 # lan es un bridge, conectado a los LXC containers
 # net es la interfaz que nos conecta a Internet (ej: bridge de la eth0)
@@ -39,7 +39,7 @@ cat > /etc/shorewall/masq << EOF
 ############################################################################
 # Shorewall Masq
 #INTERFACE    SUBNET
-br0        172.16.30.0/24
+$BRIDGENAME       172.16.30.0/24
 EOF
 # Esto permite que la red LAN salga a Internet de manera directa y enmascarada (Forward masquerading)
 

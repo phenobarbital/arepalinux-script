@@ -6,8 +6,12 @@ options=`cat /etc/default/grub | grep madvise`
 # aplicar cambios al grub solo si no estan aplicados
 if [ -z "$options" ]; then
 	$SED -i -e "s/GRUB_CMDLINE_LINUX=\"\"/GRUB_CMDLINE_LINUX=\"${GRUB_FLAGS}\"/" /etc/default/grub
+fi
+
+# disable ipv6
+if [ -z "`grep 'ipv6' /etc/default/grub`" ]; then
 	# disable ipv6
-	sed -i "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 ipv6.disable=1\"/" /etc/default/grub
+	sed -i -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 ipv6.disable=1\"/" /etc/default/grub
 fi
 
 # aplicar las flags dependiendo del tipo de tarjeta de video
@@ -17,9 +21,9 @@ info "Detecting Video Card information, please wait ..."
 videodriver=$(lshw -class display -disable dmi -quiet | grep configuration | awk '{ print $2}' | cut -d '=' -f2 | tr -d ' ')
 case "$videodriver" in
     "i915")
-        sed -i "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 $GRUB_INTEL\"/" /etc/default/grub;;
+        sed -i -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 $GRUB_INTEL\"/" /etc/default/grub;;
     "radeon")
-        sed -i "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 $GRUB_RADEON\"/" /etc/default/grub;;
+        sed -i -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 $GRUB_RADEON\"/" /etc/default/grub;;
     *)
     error "unknown Video card $videodriver for configuration";;
 esac
