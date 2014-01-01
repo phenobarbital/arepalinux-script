@@ -1,0 +1,8 @@
+#!/bin/bash -e
+# 10-configure-dns
+#
+# configure a dns cache (dnsmasq)
+#
+# Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
+# términos de la Licencia Pública General de GNU (versión 3).
+

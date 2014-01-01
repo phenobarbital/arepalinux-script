@@ -3,3 +3,87 @@
 #
 #  Install and configure Shorewall firewall
 #
+# Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
+# términos de la Licencia Pública General de GNU (versión 3).
+
+# install and configure shorewall
+
+install_package shorewall
+
+# enable shorewall
+sed -i -e "s/startup=0/startup=1/" /etc/default/shorewall
+
+# configure shorewall
+cat > /etc/shorewall/interfaces << EOF
+############################################################################
+# Shorewall interfaces
+FORMAT 2
+#ZONE   INTERFACE   OPTIONS
+lan     lan0             routefilter,tcpflags,nosmurfs,logmartians,sourceroute=0
+net     br0          routefilter,routeback,bridge,tcpflags,nosmurfs,sourceroute=0
+EOF
+# lan es un bridge, conectado a los LXC containers
+# net es la interfaz que nos conecta a Internet (ej: bridge de la eth0)
+
+cat > /etc/shorewall/zones << EOF
+############################################################################
+# Shorewall Zones
+#ZONE   TYPE    OPTIONS         IN          OUT
+#                   OPTIONS         OPTIONS
+fw  firewall
+net ipv4
+lan ipv4
+EOF
+
+cat > /etc/shorewall/masq << EOF
+############################################################################
+# Shorewall Masq
+#INTERFACE    SUBNET
+br0        172.16.30.0/24
+EOF
+# Esto permite que la red LAN salga a Internet de manera directa y enmascarada (Forward masquerading)
+
+cat > /etc/shorewall/policy << EOF
+############################################################################
+# shorewall policies
+#SOURCE     DEST        POLICY      LOG LEVEL   LIMIT:BURST
+fw      lan     ACCEPT
+fw     net     ACCEPT
+# acceso desde lan
+lan     fw      ACCEPT
+lan     net     ACCEPT
+# acceso desde internet
+net     fw      DROP
+net     lan     DROP
+# The FOLLOWING POLICY MUST BE LAST
+all     all     DROP      info
+EOF
+
+sshport=$(cat /etc/ssh/sshd_config | grep Port | cut -d ' ' -f2)
+
+cat > /etc/shorewall/rules << EOF
+#ACTION     SOURCE  DEST    PROTO   DEST   SOURCE  ORIGINAL RATE   USER/  MARK
+#                                   PORT   PORT(S) DEST     LIMIT  GROUP
+#
+# Accept Ping and Traceroute from the internet
+ACCEPT:info net     fw     icmp       8
+# Acceso SSH
+ACCEPT      all     fw     tcp        $sshport    -    -   2/min:3
+# Aceptar PING
+Ping(ACCEPT)     net     all
+EOF
+
+# - deshabilitar ipv6
+sed -i "s/^DISABLE_IPV6=.*$/DISABLE_IPV6=Yes/" /etc/shorewall/shorewall.conf
+
+# - integrate with fail2ban
+sed -i "s/^BLACKLISTNEWONLY=.*$/BLACKLISTNEWONLY=No/" /etc/shorewall/shorewall.conf
+
+# - habilitar ip-forwarding:
+sed -i "s/^IP_FORWARDING=.*$/IP_FORWARDING=On/" /etc/shorewall/shorewall.conf
+sed -i "s/^OPTIMIZE=.*$/OPTIMIZE=8/" /etc/shorewall/shorewall.conf
+
+# update configuration
+shorewall update -D /etc/shorewall
+
+service shorewall restart

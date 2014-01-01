@@ -19,12 +19,12 @@ perl -npe 's/LOGIN_RETRIES\s+5/LOGIN_RETRIES 6/g' -i /etc/login.defs
 
 # kick off idle users:
 message "Idle users will be removed after 15 minutes"
-
-echo "readonly TMOUT=900" >> /etc/profile.d/os-security.sh
-echo "readonly HISTFILE" >> /etc/profile.d/os-security.sh
-
+cat <<EOF > /etc/profile.d/os-security.sh
+# set a 15 min timeout policy for bash shell
+readonly TMOUT=900
+export TMOUT
+EOF
 chmod +x /etc/profile.d/os-security.sh
-
 
 # install fail2ban
 
