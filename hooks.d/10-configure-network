@@ -8,6 +8,9 @@
 
 install_package bridge-utils openvswitch-switch
 
+# configure openvswitch module
+install_package openvswitch-datapath-dkms openvswitch-controller
+
 # backup interfaces
 cp /etc/network/interfaces /etc/network/interfaces.orig
 
@@ -65,3 +68,15 @@ iface lan0 inet static
     bridge-stp on
     bridge-fd 0
 EOF
+
+# generate a resolv.conf
+cat <<EOF > /etc/resolv.conf
+domain $DOMAIN
+search $DOMAIN
+nameserver 127.0.0.1
+EOF
+
+# start and stop network
+service networking stop
+/sbin/ifdown $firstiface
+service networking start
