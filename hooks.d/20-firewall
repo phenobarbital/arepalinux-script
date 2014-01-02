@@ -82,8 +82,3 @@ sed -i "s/^BLACKLISTNEWONLY=.*$/BLACKLISTNEWONLY=No/" /etc/shorewall/shorewall.c
 # - habilitar ip-forwarding:
 sed -i "s/^IP_FORWARDING=.*$/IP_FORWARDING=On/" /etc/shorewall/shorewall.conf
 sed -i "s/^OPTIMIZE=.*$/OPTIMIZE=8/" /etc/shorewall/shorewall.conf
-
-# update configuration
-shorewall update -D /etc/shorewall
-
-service shorewall restart

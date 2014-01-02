@@ -96,7 +96,7 @@ show_summary
 	hooks="$HOOKSDIR"
 	for f in $(find $hooks/* -maxdepth 1 -executable -type f ! -iname "*.md" ! -iname ".*" | sort --numeric-sort); do
 		if [ "$WAIT" == 'true' ]; then 
-			read -p "Continue (y/n)?" WORK
+			read -p "Continue with $f (y/n)?" WORK
 			if [ "$WORK" != "y" ]; then
 				exit 0
 			else

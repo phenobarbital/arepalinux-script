@@ -6,21 +6,25 @@
 # Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
 # términos de la Licencia Pública General de GNU (versión 3).
 
-install_package bridge-utils openvswitch-switch
-
-# configure openvswitch module
-install_package openvswitch-datapath-dkms openvswitch-controller
+if [ -z $(which ovs-vsctl) ]; then
+	install_package bridge-utils openvswitch-switch
+	# configure openvswitch module
+	install_package openvswitch-datapath-dkms openvswitch-controller
+fi
 
 # backup interfaces
 cp /etc/network/interfaces /etc/network/interfaces.orig
 
 # get first interface
 firstiface=$(ip route | grep default |  awk '{ print $5}' | tr -d ' ')
-# network options
-ipaddr=$(get_ip $firstiface)
-netmask=$(get_netmask $firstiface)
-network=$(get_network $GATEWAY $netmask)
-broadcast=$(get_broadcast $firstiface)
+
+# configure network only if it is not configured
+if [ "$firstiface" != $BRIDGENAME ]; then
+  # network options
+  ipaddr=$(get_ip $firstiface)
+  netmask=$(get_netmask $firstiface)
+  network=$(get_network $GATEWAY $netmask)
+  broadcast=$(get_broadcast $firstiface)
 
 # add loopback configuration
 cat <<EOF > /etc/network/interfaces
@@ -76,7 +80,7 @@ search $DOMAIN
 nameserver 127.0.0.1
 EOF
 
-# start and stop network
-service networking stop
-/sbin/ifdown $firstiface
-service networking start
+# configure interface in openvswitch
+ovs-vsctl add-br $BRIDGENAME
+ovs-vsctl add-if $BRIDGENAME $firstiface
+fi

@@ -4,6 +4,8 @@
 #  This script ensures that required kernel modules will be started
 #
 
+install_package linux-headers-$(uname -r)
+
 # CPU
 cpumodel=$(lscpu | grep Vendor | head -n1 | cut -d ':' -f2 | tr -d ' ')
 case "$cpumodel" in
