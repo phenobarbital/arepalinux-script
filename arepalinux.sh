@@ -95,7 +95,16 @@ show_summary
 	# running debian hooks
 	hooks="$HOOKSDIR"
 	for f in $(find $hooks/* -maxdepth 1 -executable -type f ! -iname "*.md" ! -iname ".*" | sort --numeric-sort); do
-		. $f
+		if [ "$WAIT" == 'true' ]; then 
+			read -p "Continue (y/n)?" WORK
+			if [ "$WORK" != "y" ]; then
+				exit 0
+			else
+				. $f
+			fi
+		else
+			. $f
+		fi
 	done
 }
 
