@@ -5,9 +5,17 @@
 #  in this system
 #
 
+# disable firewire module
+echo "blacklist firewire-ohci" > /etc/modprobe.d/blacklist-firewire.conf
+
 if [ -z "`grep 'legal disclaimer' /etc/motd`" ]; then
 echo "legal disclaimer:" >> /etc/motd
 echo "This is a private system, all unauthorized access is prohibited" >> /etc/motd 
+fi
+
+if [ -z "`grep 'legal disclaimer' /etc/issue.net`" ]; then
+echo "legal disclaimer:" >> /etc/motd
+echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue.net 
 fi
 
 # Don't allow any nut to kill the server
@@ -61,3 +69,11 @@ sed -i 's/^FW_MSG_SEARCH.*$/FW_MSG_SEARCH               DROP;\nFW_MSG_SEARCH    
 
 # install rootkit tools
 install_package chkrootkit rkhunter
+
+# install tripwire
+
+
+# install auditd
+
+
+# install selinux

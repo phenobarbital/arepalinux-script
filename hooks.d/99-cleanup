@@ -34,7 +34,6 @@ fi
 # cleanup system
 install_package localepurge deborphan
 $APTITUDE -y purge $(deborphan --libdevel) $(deborphan --find-config)
-$APTITUDE -y purge libgcc-4.7-dev
 
 #
 # clean apt cache

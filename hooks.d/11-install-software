@@ -17,3 +17,8 @@ install_package clamav clamav-daemon clamav-freshclam
 
 # configure postfix for local system
 install_package postfix
+
+if [ -z "`grep 'inet_protocols' /etc/postfix/main.cf`" ]; then
+	echo 'inet_protocols = ipv4' >> /etc/postfix/main.cf
+fi
+sed -i -e "s/smtpd_banner.*$/smtpd_banner = $SERVERNAME ESMTP $DOMAIN/" /etc/postfix/main.cf

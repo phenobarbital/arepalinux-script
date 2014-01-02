@@ -111,5 +111,6 @@ show_summary
 # = end = #
 main
 
-info "= All done. please restart system ="
+warning "Reboot needed"
+info "= All done. please restart system to apply changes ="
 exit 0
