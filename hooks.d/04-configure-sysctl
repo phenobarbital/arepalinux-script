@@ -126,6 +126,7 @@ vm.vfs_cache_pressure = 40
 # fs
 fs.aio-max-nr = 1048576
 fs.file-max = 287573
+# disable core dumps
 fs.suid_dumpable = 0
 
 # Scheduler-Tuning

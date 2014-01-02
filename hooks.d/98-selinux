@@ -1,0 +1,28 @@
+#!/bin/bash
+# 98-selinux
+#
+# Install basic functionality of selinux
+#
+#
+
+install_package selinux-basics selinux-utils selinux-policy-default
+
+status=$(sestatus | grep "SELinux status" | awk '{ print $2}')
+
+if [ "$status" == 'enabled' ]; then
+# generate basic policies
+audit2allow -a -M mypolicies
+# enable this policies
+semodule -i mypolicies.pp
+# enable user
+semanage login -a -s staff_u $SUPPORT
+semanage user -a -R 'staff_r sysadm_r' $SUPPORT
+else
+# enable selinux
+selinux-activate
+
+# enable filesystem check on boot
+sed -i 's/^#FSCKFIX=no/FSCKFIX=yes/' /etc/default/rcS
+
+warning "SELinux is enabled, please restart system"
+fi

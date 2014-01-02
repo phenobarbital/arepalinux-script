@@ -13,18 +13,16 @@ cat <<EOF > /etc/rc.local
 #
 # optimizacion del disco
 /bin/bash /sbin/optimicedisk.sh
-# compartir internet a las LXC
-/bin/bash /sbin/compartir_internet
 exit 0
 EOF
 chmod a+x /etc/rc.local
 
-cat <<EOF > /sbin/compartir_internet
+#cat <<EOF > /sbin/compartir_internet
 #!/bin/bash
-iptables -I FORWARD -m physdev --physdev-is-bridged -j ACCEPT
-iptables -P FORWARD ACCEPT
-EOF
-chmod a+x /sbin/compartir_internet
+#iptables -I FORWARD -m physdev --physdev-is-bridged -j ACCEPT
+#iptables -P FORWARD ACCEPT
+#EOF
+#chmod a+x /sbin/compartir_internet
 
 # optimize disk settings
 install_package hdparm
@@ -51,3 +49,9 @@ root            hard    stack            16384
 *               soft    stack            16384
 *               hard    stack            16384
 EOF
+
+# disable core dumps
+if [ -z "`grep 'ulimit -S' /etc/profile`" ]; then
+	echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
+	echo "*	hard 		core 		0" >> /etc/security/limits.conf
+fi

@@ -14,7 +14,8 @@ service ntp restart
 # install antivirus
 install_package clamav clamav-daemon clamav-freshclam
 
-
+# disable exim4
+aptitude purge exim4 exim4-daemon-light
 # configure postfix for local system
 install_package postfix
 

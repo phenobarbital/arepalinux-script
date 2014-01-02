@@ -14,3 +14,15 @@ Arepalinux need this software for work:
 - lshw
 
 This script is released under GPL version 3.0.
+
+Use
+---
+
+Notes
+-----
+
+Lynis Hardening Index:
+
+================================================================================
+  Hardening index : [90]     [##################  ]
+================================================================================

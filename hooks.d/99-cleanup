@@ -20,7 +20,7 @@ chmod -s /usr/bin/passwd
 chmod -s /usr/bin/wall
 
 # asegurar archivos basicos:
-chmod 027 /etc/profile /etc/login.defs /etc/init.d/rc
+chmod 0754 /etc/profile /etc/login.defs /etc/init.d/rc
 
 # asegurar tmp
 if [ -z "`grep 'secure tmp' /etc/fstab`" ]; then

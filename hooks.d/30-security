@@ -5,6 +5,16 @@
 #  in this system
 #
 
+# set expiration date for common user
+chage -M 365 $ACCOUNT
+chage -M 768 root
+
+# change default UMASK
+sed -i -e 's/^UMASK.*$/UMASK          027/' /etc/login.defs
+sed -i -e 's/^umask.*$/umask 027/' /etc/init.d/rc
+
+echo 'root' > /etc/ftpusers
+
 # disable firewire module
 echo "blacklist firewire-ohci" > /etc/modprobe.d/blacklist-firewire.conf
 
@@ -15,11 +25,16 @@ fi
 
 if [ -z "`grep 'legal disclaimer' /etc/issue.net`" ]; then
 echo "legal disclaimer:" >> /etc/motd
-echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue.net 
+echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue.net
+fi
+
+if [ -z "`grep 'legal information' /etc/issue`" ]; then
+echo "legal information: \n \l" >> /etc/motd
+echo "This is a private system, all unauthorized access is prohibited \n \l" >> /etc/issue.net
 fi
 
 # Don't allow any nut to kill the server
-perl -npe 's/ca::ctrlaltdel:\/sbin\/shutdown/#ca::ctrlaltdel:\/sbin\/shutdown/' -i /etc/inittab
+sed -i -e 's/ca:12345:ctrlaltdel:/sbin/shutdown.*$/#ca:12345:ctrlaltdel:/sbin/shutdown -t1 -a -r now/' /etc/inittab
 
 # Passwords expire every 180 days
 perl -npe 's/PASS_MAX_DAYS\s+99999/PASS_MAX_DAYS 180/' -i /etc/login.defs
@@ -70,10 +85,45 @@ sed -i 's/^FW_MSG_SEARCH.*$/FW_MSG_SEARCH               DROP;\nFW_MSG_SEARCH    
 # install rootkit tools
 install_package chkrootkit rkhunter
 
+
+# install aide (integrity tool)
+install_package aide aide-common
+sed -i "s/^MAILTO=root/MAILTO=$MAIL;/" /etc/default/aide
+sed -i -e "s/Checksums =.*$/Checksums = sha512+tiger/" /etc/aide/aide.conf
+# initialize database
+aide --config /etc/aide/aide.conf --init
+message "Generate first AIDE database, this will need several minutes, please wait"
+aideinit
+mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+
 # install tripwire
+install_package tripwire
+info "Initialize tripwire database, press ENTER (no local key passphrase)"
+# initialize tripwire database
+tripwire -m i
 
+# install auditd (audit information)
+install_package auditd audispd-plugins
 
-# install auditd
+# install acct (account information)
+install_package acct
+service acct stop
+mkdir /var/account
+sed -i 's/\/var\/log\/account\/pacct/\/var\/account\/pacct/' /etc/init.d/acct
+mv /var/log/account/pacct /var/account/
+chown -R root.adm /var/account
+service acct start
 
-
-# install selinux
+# insert basic audit rules
+if [ -z "`grep 'faillog' /etc/audit/audit.rules`" ]; then
+cat <<EOF >> /etc/audit/audit.rules
+# registrar los intentos fallidos de lectura sobre archivos
+-a exit,always -F arch=b64 -S open -F success=0 
+# registrar los intentos fallidos de escritura sobre archivos
+-a exit,always -F arch=b64 -S write -F success=0 
+-w /etc/sudoers -p wa -k sudoers-change
+-w /var/log/faillog -p wa -k logins
+-w /var/log/lastlog -p wa -k logins
+-A exit,always -F arch=b64 -F euid=0 -F uid!=0 -S execve
+EOF
+fi

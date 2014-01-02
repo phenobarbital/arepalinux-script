@@ -10,6 +10,9 @@ if [ -z "`which dnsmasq`" ]; then
 # install dnsmasq
 install_package dnsmasq
 
+groupadd -r dnsmasq
+adduser dnsmasq dnsmasq
+
 # Guardas el archivo original
 cp /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
 
@@ -31,6 +34,7 @@ dns-forward-max=150
 cache-size=1000
 neg-ttl=3600
 EOF
+chown dnsmasq.dnsmasq /etc/dnsmasq.d -R
 
 # generate a resolv.dnsmasq
 cat <<EOF > /etc/resolv.dnsmasq
