@@ -162,3 +162,14 @@ install_package xfsprogs btrfs-tools dosfstools ntfs-3g cifs-utils
 # basic programming languages
 #
 install_package ${prefix} perl-modules python-minimal python-pip python-setuptools ruby rubygems php5-cli
+
+# secure php5-cli
+sed -i 's/^register_globals \= On/register_globals \= Off/' /etc/php5/cli/php.ini
+echo 'register_globals = Off' >> /etc/php5/cli/php.ini
+sed -i 's/^expose_php \= On/expose_php \= Off/' /etc/php5/cli/php.ini
+sed -i 's/^allow_url_fopen \= On/allow_url_fopen \= Off/' /etc/php5/cli/php.ini
+sed -i 's/^zlib.output_compression \= Off/zlib.output_compression \= On/' /etc/php5/cli/php.ini
+
+# install locate
+install_package locate
+updatedb

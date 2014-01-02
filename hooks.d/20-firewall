@@ -67,6 +67,8 @@ cat > /etc/shorewall/rules << EOF
 #
 # Accept Ping and Traceroute from the internet
 ACCEPT:info net     fw     icmp       8
+# Accept NTP udp
+ACCEPT    net     fw    udp     123
 # Acceso SSH
 ACCEPT      all     fw     tcp        $sshport    -    -   2/min:3
 # Aceptar PING

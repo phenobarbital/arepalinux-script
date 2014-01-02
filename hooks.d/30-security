@@ -5,6 +5,11 @@
 #  in this system
 #
 
+if [ -z "`grep 'legal disclaimer' /etc/motd`" ]; then
+echo "legal disclaimer:" >> /etc/motd
+echo "This is a private system, all unauthorized access is prohibited" >> /etc/motd 
+fi
+
 # Don't allow any nut to kill the server
 perl -npe 's/ca::ctrlaltdel:\/sbin\/shutdown/#ca::ctrlaltdel:\/sbin\/shutdown/' -i /etc/inittab
 
@@ -30,7 +35,7 @@ chmod +x /etc/profile.d/os-security.sh
 install_package fail2ban
 
 sed -i 's/^banaction.*$/banaction = shorewall/' /etc/fail2ban/jail.conf
-sed -i 's/^destemail.*$/destemail = $MAIL/' /etc/fail2ban/jail.conf
+sed -i "s/^destemail.*$/destemail = $MAIL/" /etc/fail2ban/jail.conf
 sed -i 's/^bantime.*$/bantime = 1200/' /etc/fail2ban/jail.conf
 
 service fail2ban restart
@@ -39,7 +44,7 @@ service fail2ban restart
 install_package denyhosts
 
 sed -i -e 's/^PURGE_DENY.*$/PURGE_DENY = 72h/' /etc/denyhosts.conf
-sed -i -e 's/^ADMIN_EMAIL.*$/ADMIN_EMAIL = $MAIL/' /etc/denyhosts.conf
+sed -i -e "s/^ADMIN_EMAIL.*$/ADMIN_EMAIL = $MAIL/" /etc/denyhosts.conf
 sed -i -e 's/^#RESET_ON_SUCCESS.*$/RESET_ON_SUCCESS = yes/' /etc/denyhosts.conf
 sed -i -e 's/^#SYSLOG_REPORT=YES.*$/SYSLOG_REPORT=YES/' /etc/denyhosts.conf
 sed -i -e 's/^#SYNC_SERVER.*$/SYNC_SERVER = http:\/\/xmlrpc.denyhosts.net:9911/' /etc/denyhosts.conf
@@ -49,8 +54,8 @@ service denyhosts restart
 # install psad
 install_package psad
 
-sed -i 's/^EMAIL_ADDRESSES.*$/EMAIL_ADDRESSES             ${MAIL};/' /etc/psad/psad.conf
-sed -i "s/^HOSTNAME.*$/HOSTNAME             ${NAME};/" /etc/psad/psad.conf
+sed -i "s/^EMAIL_ADDRESSES.*$/EMAIL_ADDRESSES             $MAIL;/" /etc/psad/psad.conf
+sed -i "s/^HOSTNAME.*$/HOSTNAME             $NAME;/" /etc/psad/psad.conf
 sed -i 's/^ENABLE_IPV6_DETECTION.*$/ENABLE_IPV6_DETECTION             NO;/' /etc/psad/psad.conf
 sed -i 's/^FW_MSG_SEARCH.*$/FW_MSG_SEARCH               DROP;\nFW_MSG_SEARCH               Shorewall:net2all:DROP:;\nFW_MSG_SEARCH Shorewall:net2fw:DROP:;/' /etc/psad/psad.conf
 

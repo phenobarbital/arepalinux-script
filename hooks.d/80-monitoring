@@ -17,6 +17,8 @@ sed -i -e "s/SNMPDRUN=no/SNMPDRUN=yes/" /etc/default/snmpd
 sed -i -e '/ *#/d; /^ *$/d' /etc/snmp/snmpd.conf
 # listen on all interfaces:
 sed -i "s/^agentAddress.*$/agentAddress  udp:0.0.0.0:161/" /etc/snmp/snmpd.conf
+# configurar zona
+sed -i "s/^rocommunity public.*$/rocommunity public  default/" /etc/snmp/snmpd.conf
 # incorporar todas las vistas:
 sed -i -e "s/view   systemonly  included   .1.3.6.1.2.1.1.*$/view all included  .1\nview   systemonly  included  .1         80/" /etc/snmp/snmpd.conf
 # configure user

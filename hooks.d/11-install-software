@@ -5,4 +5,14 @@
 # Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
 # términos de la Licencia Pública General de GNU (versión 3).
 
-$APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx ethtool htop iftop less screen tree curl wget telnet iputils-ping dnsutils lsof
+$APT -y install sudo locate rsync bash-completion wget ntp tcpdump ntpdate finger links lynx ethtool htop iftop less screen tree curl wget telnet iputils-ping dnsutils lsof
+
+# configure NTP
+hwclock --systohc
+service ntp restart
+
+# install antivirus
+install_package clamav clamav-daemon clamav-freshclam
+
+
+# configure postfix for local system

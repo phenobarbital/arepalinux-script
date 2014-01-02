@@ -5,6 +5,7 @@
 #
 
 ssh_port=$((RANDOM%65000+100))
+
 $APT -y install ssh openssh-server sudo
 
 #
@@ -52,8 +53,10 @@ EOF
 cat <<EOF >>/etc/ssh/sshd_banner
 ************************************************
 
-Bienvenido a un equipo ArepaLinux $VERSION
+Welcome to ArepaLinux $VERSION System
 $DIST GNU/Linux $SUITE
+
+All unauthorized access is prohibited
 
 *************************************************
 EOF
