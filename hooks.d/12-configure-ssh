@@ -56,8 +56,6 @@ cat <<EOF >>/etc/ssh/sshd_banner
 Welcome to ArepaLinux $VERSION System
 $DIST GNU/Linux $SUITE
 
-All unauthorized access is prohibited
-
 *************************************************
 EOF
 

@@ -16,3 +16,4 @@ install_package clamav clamav-daemon clamav-freshclam
 
 
 # configure postfix for local system
+install_package postfix
