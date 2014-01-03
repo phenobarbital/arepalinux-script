@@ -33,10 +33,33 @@ deb $mirror $SUITE $REPO_SECTIONS
 #deb http://security.debian.org/ $SUITE/updates main
 E_O_APT
 
+cat <<EOF > /etc/apt/apt.conf.d/80-update
+Acquire::Check-Valid-Until "false";
+EOF
+
+cat <<EOF > /etc/apt/preferences.d/$DIST.pref
+Package: *
+Pin: release n=$SUITE
+Pin-Priority: 100
+
+Package: *
+Pin: release n=$SUITE-updates
+Pin-Priority: 999
+EOF
+
+if [ "$ENABLE_BACKPORTS" == "yes" ]; then
 # backport repositories
 cat <<E_O_APT > /etc/apt/sources.list.d/backports.list
 deb $mirror $SUITE-backports $REPO_SECTIONS
 E_O_APT
+
+cat <<EOF >> /etc/apt/preferences.d/$DIST.pref
+
+Package: *
+Pin: release n=$SUITE-backports
+Pin-Priority: 999
+EOF
+fi
 
 cat <<EOF > /etc/apt/apt.conf.d/10-$DIST
 Acquire::PDiffs "false";
@@ -46,24 +69,6 @@ APT::Get:AutomaticRemove "true";
 APT::Get::HideAutoRemove "false";
 APT::Get:Show-Upgraded "true";
 APT::Install-Recommends "false";
-EOF
-
-cat <<EOF > /etc/apt/apt.conf.d/80-update
-Acquire::Check-Valid-Until "false";
-EOF
-
-cat <<EOF > /etc/apt/preferences.d/$DIST.pref
-Package: *
-Pin: release n=$SUITE-backports
-Pin-Priority: 999
-
-Package: *
-Pin: release n=$SUITE
-Pin-Priority: 100
-
-Package: *
-Pin: release n=$SUITE-updates
-Pin-Priority: 999
 EOF
 
 cat <<EOF > /etc/apt/apt.conf.d/90-recommends
