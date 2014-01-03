@@ -5,6 +5,8 @@
 #  installation.
 #
 
+info " Configure utilities "
+
 # install and configure vim
 install_package vim
 

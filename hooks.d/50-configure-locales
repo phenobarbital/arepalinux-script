@@ -4,6 +4,8 @@
 # install and configure locales
 #
 
+info " Configuring Linux locales "
+
 #
 #  Install locales
 #

@@ -6,7 +6,7 @@
 # Version: 0.1  
 #
 #    Developed by Jesus Lara (phenobarbital) <jesuslara@phenobarbital.info>
-#    https://github.com/phenobarbital/arepalinux-1
+#    https://github.com/phenobarbital/arepalinux-script
 #    
 #    License: GNU GPL version 3  <http://gnu.org/licenses/gpl.html>.
 #    This is free software: you are free to change and redistribute it.
@@ -41,53 +41,189 @@ else
     . ./lib/libarepa.sh
 fi
 
+# get template
+get_role() 
+{
+	if [ -z "$ROLENAME" ]; then
+	    error "$(basename $0) role definition is missing, aborted"
+		exit 1
+	fi
+	roledir
+	if [ -f "$ROLEDIR/$ROLENAME" ]; then
+			#verifico esta permisologia
+			if [ ! -x "$ROLEDIR/$ROLENAME" ]; then
+				error "error: role '$ROLEDIR/$ROLENAME' is not executable, try chmod o+x $ROLEDIR/$ROLENAME"
+				return 1
+			else
+				debug "- using $ROLENAME as role"
+				ROLE="$ROLEDIR/$ROLENAME"
+			fi
+	else
+		error "$(basename $0) role $ROLENAME not exist, aborted"
+		exit 1
+	fi	
+}
+
 
 ### main execution program ###
 
+NAME=''
+SIZE=''
+IP=''
+IFACE=''
+LAN_INTERFACE='eth0'
+DIST=''
+TEMPLATE=''
+HOSTNAME=''
+SERVERNAME=''
 
-if [ "`id -u`" != "0" ]; then
-$CAT << _MSG
-  ---------------------------------------
-  | Error !!                            |
-  | Es necesario ser root para instalar |
-  | Y configurar ArepaLinux $VERSION    |
-  |                                     |
-  | No se instalará nada!               |
-  ---------------------------------------
-_MSG
+usage() {
+	echo ""
+	echo "Usage: $(basename $0) [-n|--hostname=<hostname>] [-D|--domain=DOMAIN] [-r|--role=<role-name>]
+        [-l|--lan=<lan interface>] [--packages=<comma-separated package list>] [--debug] [-h|--help]"  
+    return 1
+}
+
+help() {
+	usage
+cat <<EOF
+
+This script is a helper to install a Debian GNU/Linux Server-Oriented
+
+Automate, Secure and easily install a Debian Enterprise-ready Server/Workstation
+
+Options:
+  -n, --hostname             specify the name of the debian server
+  -r, --role                 role-based script for running in server after installation
+  -D, --domain               define Domain Name
+  -l, --lan                  define LAN Interface (ej: eth0)
+  --packages                 Extra comma-separated list of packages
+  --debug                    Enable debugging information
+  Help options:
+      --help     give this help list
+      --usage	 Display brief usage message
+      --version  print program version
+EOF
+	echo ''
+	get_version
 	exit 1
+}
+
+
+if [ "$(id -u)" != "0" ]; then
+   error "$(basename $0): must be run as root" >&2
+   exit 1
 fi
+
+# processing arguments
+ARGS=`getopt -n$0 -u -a -o r:n:D:l:h --longoptions packages:,debug,verbose,version,help,lan::,domain::,role::,hostname:: -- "$@"`
+eval set -- "$ARGS"
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+        -n|--hostname)
+			optarg_check $1 "$2"
+            check_name "$2"
+            NAME=$2
+            shift
+            ;;
+        -r|--role)
+			optarg_check $1 "$2"
+            ROLENAME=$2
+            shift
+            ;;
+        -D|--domain)
+			optarg_check $1 "$2"
+            check_domain $2
+            DOMAIN=$2
+            shift
+            ;;
+        -l|--lan)
+			optarg_check $1 "$2"
+            LAN_INTERFACE=$2
+            shift
+            ;;
+        --packages)
+			optarg_check $1 "$2"
+			PACKAGES="$2"
+			shift
+			;;           
+        --debug)
+            VERBOSE='true'
+            ;;
+        --verbose)
+            VERBOSE='true'
+            ;;     
+        --version)
+			get_version
+			exit 0;;
+        -h|--help)
+            help
+            exit 1
+            ;;
+        --)
+            break;;
+        -?)
+            usage_err "unknown option '$1'"
+            exit 1
+            ;;
+        *)
+			info "$1"
+            usage
+            exit 1
+            ;;
+	esac
+    shift
+done
 
 main()
 {
 ## auto-discover and autoinstall packages
 DIST=`get_distribution`
 SUITE=`get_suite`
-NAME=`hostname --short`
-# descubrir el dominio
-get_domain
+
+	# si no pasamos ningun parametro
+	if [ $# = 0 ]; then
+		# descubrir el nombre del equipo
+		get_hostname
+		# descubrir el dominio
+		get_domain
+		# deteccion de interface
+		firstdev
+	fi
 SERVERNAME=$NAME.$DOMAIN
+# get first account
 ACCOUNT=`getent passwd | grep 1000 | cut -d':' -f1`
-# deteccion de interface
-firstdev
 LAN_IPADDR="$(ip addr show $LAN_INTERFACE | awk "/^.*inet.*$LAN_INTERFACE\$/{print \$2}" | sed -n '1 s,/.*,,p')"
+if [ -z "$LAN_INTERFACE" ]; then
+	error "LAN Interface its not defined"
+	exit 1
+fi
+if [ -z "$LAN_IPADDR" ]; then
+	error "LAN Interface $LAN_INTERFACE not configured, please assign a IP Address"
+	exit 1
+fi
+
 GATEWAY=$(get_gateway)
 # network options
 NETMASK=$(get_netmask $LAN_INTERFACE)
 NETWORK=$(get_network $GATEWAY $NETMASK)
 SUBNET=$(get_subnet $LAN_INTERFACE)
 BROADCAST=$(get_broadcast $LAN_INTERFACE)
+
 # FS OPTIONS
 BOOTFS=$(cat /etc/fstab | grep boot | grep UUID | awk '{print $3}')
 ROOTFS=$(cat /etc/fstab | grep " / " | grep UUID | awk '{print $3}')
+
 hooksdir
 
+debug "= Arepa Linux Installation Summary = "
 ## show summary
 show_summary
 
 	# TODO, ¿pedir confirmación para proceder luego del sumario?
 	if [ "$VERBOSE" == 'true' ]; then
-		read -p "Continue (y/n)?" WORK
+		read -p "Continue with installation (y/n)?" WORK
 		if [ "$WORK" != "y" ]; then
 			exit 0
 		fi
@@ -106,6 +242,11 @@ show_summary
 			. $f
 		fi
 	done
+	
+	# executing roles
+	
+	# installing packages list
+	
 }
 
 # = end = #

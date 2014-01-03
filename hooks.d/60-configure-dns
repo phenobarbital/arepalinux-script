@@ -6,6 +6,10 @@
 # Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
 # términos de la Licencia Pública General de GNU (versión 3).
 
+if [ "$DISABLE_SELINUX" != 'yes' ]; then
+
+info " Install dns cache (dnsmasq) "
+
 if [ -z "`which dnsmasq`" ]; then
 # install dnsmasq
 install_package dnsmasq
@@ -43,5 +47,7 @@ search $DOMAIN
 nameserver $GATEWAY
 EOF
 chown dnsmasq.dnsmasq /etc/resolv.dnsmasq
+
+fi
 
 fi

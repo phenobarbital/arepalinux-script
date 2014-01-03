@@ -4,6 +4,7 @@
 # This script configure apt
 #
 
+info " Starting: Configure APT "
 
 #
 # Setup the sources.list file for new installations of Debian GNU/Linux.
@@ -53,8 +54,12 @@ EOF
 
 cat <<EOF > /etc/apt/preferences.d/$DIST.pref
 Package: *
-Pin: release n=$SUITE
+Pin: release n=$SUITE-backports
 Pin-Priority: 999
+
+Package: *
+Pin: release n=$SUITE
+Pin-Priority: 100
 
 Package: *
 Pin: release n=$SUITE-updates

@@ -5,6 +5,8 @@
 #  in this system
 #
 
+info " Secure System "
+
 # set expiration date for common user
 chage -M 365 $ACCOUNT
 chage -M 768 root
@@ -14,6 +16,7 @@ sed -i -e 's/^UMASK.*$/UMASK          027/' /etc/login.defs
 sed -i -e 's/^umask.*$/umask 027/' /etc/init.d/rc
 
 echo 'root' > /etc/ftpusers
+echo 'nobody' >> /etc/ftpusers
 
 # disable firewire module
 echo "blacklist firewire-ohci" > /etc/modprobe.d/blacklist-firewire.conf
@@ -29,8 +32,9 @@ echo "This is a private system, all unauthorized access is prohibited" >> /etc/i
 fi
 
 if [ -z "`grep 'legal information' /etc/issue`" ]; then
-echo "legal information: \n \l" >> /etc/motd
-echo "This is a private system, all unauthorized access is prohibited \n \l" >> /etc/issue.net
+echo "hostname:  \n tty: \l "
+echo "legal information:" >> /etc/motd
+echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue
 fi
 
 # Don't allow any nut to kill the server
@@ -85,6 +89,9 @@ sed -i 's/^FW_MSG_SEARCH.*$/FW_MSG_SEARCH               DROP;\nFW_MSG_SEARCH    
 # install rootkit tools
 install_package chkrootkit rkhunter
 
+if [ "$DISABLE_INTEGRITY" != 'yes' ]; then
+
+info " Install Integrity tools (aide, tripwire) "
 
 # install aide (integrity tool)
 install_package aide aide-common
@@ -102,28 +109,11 @@ info "Initialize tripwire database, press ENTER (no local key passphrase)"
 # initialize tripwire database
 tripwire -m i
 
-# install auditd (audit information)
-install_package auditd audispd-plugins
+fi
 
-# install acct (account information)
-install_package acct
-service acct stop
-mkdir /var/account
-sed -i 's/\/var\/log\/account\/pacct/\/var\/account\/pacct/' /etc/init.d/acct
-mv /var/log/account/pacct /var/account/
-chown -R root.adm /var/account
-service acct start
+if [ "$DISABLE_SELINUX" != 'yes' ]; then
+	info " Installing ClamAV Antivirus "
 
-# insert basic audit rules
-if [ -z "`grep 'faillog' /etc/audit/audit.rules`" ]; then
-cat <<EOF >> /etc/audit/audit.rules
-# registrar los intentos fallidos de lectura sobre archivos
--a exit,always -F arch=b64 -S open -F success=0 
-# registrar los intentos fallidos de escritura sobre archivos
--a exit,always -F arch=b64 -S write -F success=0 
--w /etc/sudoers -p wa -k sudoers-change
--w /var/log/faillog -p wa -k logins
--w /var/log/lastlog -p wa -k logins
--A exit,always -F arch=b64 -F euid=0 -F uid!=0 -S execve
-EOF
+	# install antivirus
+	install_package clamav clamav-daemon clamav-freshclam
 fi

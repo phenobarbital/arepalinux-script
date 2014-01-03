@@ -114,12 +114,28 @@ usage_err()
 	exit 1
 }
 
+optarg_check() 
+{
+    if [ -z "$2" ]; then
+        usage_err "option '$1' requires an argument"
+    fi
+}
+
 hooksdir()
 {
 		if [ -d "/usr/share/arepalinux/hooks.d" ]; then
 			HOOKSDIR="/usr/share/arepalinux/hooks.d"
 		else
 			HOOKSDIR="./hooks.d"
+		fi
+}
+
+roledir()
+{
+		if [ -d "/usr/share/arepalinux/roles.d" ]; then
+			ROLEDIR="/usr/share/arepalinux/roles.d"
+		else
+			ROLEDIR="./roles.d"
 		fi
 }
 
@@ -160,6 +176,13 @@ define_domain()
 		return 1
 	else
 		DOMAIN=$_DOMAIN_
+	fi
+}
+
+get_hostname()
+{
+	if [ -z "$NAME" ]; then
+		NAME=`hostname --short`
 	fi
 }
 

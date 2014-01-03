@@ -4,6 +4,8 @@
 #  This script ensures that required kernel modules will be started
 #
 
+info "Enable specific Kernel Modules and drivers"
+
 install_package linux-headers-$(uname -r)
 
 # CPU
@@ -65,7 +67,6 @@ done
 install_package firmware-linux-free firmware-linux-nonfree
 
 # AMD and Intel especific options
-
 
 # Prepare for Video Support
 if [ "$cpumodel" == "GenuineIntel" ]; then

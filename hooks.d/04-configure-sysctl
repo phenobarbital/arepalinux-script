@@ -6,6 +6,9 @@
 
 CHANGES=$(egrep "vm.vfs_cache_pressure" /etc/sysctl.conf | tail)
 if [ -z "$CHANGES" ]; then
+
+info "Apply sysctl changes"
+
 # apply patches to sysctl
 cat <<EOF >> /etc/sysctl.conf
 # sysctl config

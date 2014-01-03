@@ -4,6 +4,8 @@
 # enable sysstat and snmpd on system
 #
 
+info " Enable SNMP and sysstat monitoring "
+
 # install and enable sysstat
 install_package sysstat
 sed -i 's/ENABLED="false"/ENABLED="true"/' /etc/default/sysstat
@@ -28,3 +30,6 @@ service snmpd restart
 
 # configure smartmontools and sensors
 install_package smartmontools lm-sensors
+
+# other monitoring tools
+install_package htop iftop

@@ -4,6 +4,8 @@
 # optimice filesystem access
 #
 
+info " Update and optimize filesystems "
+
 # hacer una copia de seguridad del fstab
 cp -p /etc/fstab /etc/fstab.orig
 

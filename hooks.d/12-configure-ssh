@@ -4,7 +4,7 @@
 # install and configure SSH
 #
 
-ssh_port=$((RANDOM%65000+100))
+info " Configure SSH "
 
 $APT -y install ssh openssh-server sudo
 
@@ -31,6 +31,7 @@ if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
 fi
 
 if [ -z "`grep 'PermitRootLogin no' /etc/ssh/sshd_config`" ]; then
+  ssh_port=$((RANDOM%65000+100))
   # change SSH port
   sed -i "s/Port.*$/Port $ssh_port/" /etc/ssh/sshd_config
   warning "SSH port configured to $ssh_port"

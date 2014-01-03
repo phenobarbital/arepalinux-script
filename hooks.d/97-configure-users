@@ -4,6 +4,8 @@
 # configure system user account
 #
 
+info "Configure Users"
+
 install_package libpam-cracklib libpam-mkhomedir
 
 # crear grupo y usuario de $SUPPORT
@@ -15,6 +17,9 @@ info "User '$SUPPORT' is disabled, please set user password"
 # agregar usuario al grupo sudo
 adduser $SUPPORT $SUPPORT
 adduser $SUPPORT sudo
+
+# expiration password (1 year)
+chage -M 365 $SUPPORT
 
 # == Configure pam.access ==
 

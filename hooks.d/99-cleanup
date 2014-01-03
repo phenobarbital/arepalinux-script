@@ -5,6 +5,8 @@
 #
 #
 
+info " Cleanup System ... "
+
 # remover usuarios innecesarios:
 for u in sync games news uucp gnats; do echo "erasing user $u"; userdel $u;
 done

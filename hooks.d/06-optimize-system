@@ -6,6 +6,8 @@
 
 # Agregar rc.local
 
+info "Optimize System"
+
 cat <<EOF > /etc/rc.local
 #!/bin/sh -e
 #

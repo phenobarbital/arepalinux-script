@@ -8,6 +8,8 @@
 # configure host
 #
 
+info " Configuring Host and Domain Name "
+
 cat <<HOSTCONF_EOF >/etc/host.conf
 multi on
 order hosts,bind
