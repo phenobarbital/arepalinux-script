@@ -238,8 +238,10 @@ IF=(`cat /proc/net/dev | grep ':' | cut -d ':' -f 1 | tr '\n' ' '`)
 }
 
 firstdev() {
-	ifdev
-	LAN_INTERFACE=${IF[1]}
+	if [ -z "$LAN_INTERFACE" ]; then
+		ifdev
+		LAN_INTERFACE=${IF[1]}
+	fi
 }
 
 # get ip from interface
