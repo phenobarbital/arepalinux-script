@@ -27,18 +27,18 @@ echo "This is a private system, all unauthorized access is prohibited" >> /etc/m
 fi
 
 if [ -z "`grep 'legal disclaimer' /etc/issue.net`" ]; then
-echo "legal disclaimer:" >> /etc/motd
+echo "legal disclaimer:" >> /etc/issue.net
 echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue.net
 fi
 
 if [ -z "`grep 'legal information' /etc/issue`" ]; then
-echo "hostname:  \n tty: \l "
-echo "legal information:" >> /etc/motd
+echo "hostname:  \n tty: \l " >> /etc/issue
+echo "legal information:" >> /etc/issue
 echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue
 fi
 
 # Don't allow any nut to kill the server
-sed -i -e 's/ca:12345:ctrlaltdel:/sbin/shutdown.*$/#ca:12345:ctrlaltdel:/sbin/shutdown -t1 -a -r now/' /etc/inittab
+sed -i -e "s/ca:12345:ctrlaltdel:\(.*\)/#ca:12345:ctrlaltdel:\1" /etc/inittab
 
 # Passwords expire every 180 days
 perl -npe 's/PASS_MAX_DAYS\s+99999/PASS_MAX_DAYS 180/' -i /etc/login.defs
