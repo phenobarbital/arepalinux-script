@@ -11,9 +11,11 @@ if [ -z "$options" ]; then
 fi
 
 # disable ipv6
+if [ "$DISABLE_IPV6" == "yes" ]; then
 if [ -z "`grep 'ipv6' /etc/default/grub`" ]; then
 	# disable ipv6
 	sed -i -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 ipv6.disable=1\"/" /etc/default/grub
+fi
 fi
 
 # aplicar las flags dependiendo del tipo de tarjeta de video

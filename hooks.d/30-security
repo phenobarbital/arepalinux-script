@@ -21,17 +21,17 @@ echo 'nobody' >> /etc/ftpusers
 # disable firewire module
 echo "blacklist firewire-ohci" > /etc/modprobe.d/blacklist-firewire.conf
 
-if [ -z "`grep 'legal disclaimer' /etc/motd`" ]; then
-echo "legal disclaimer:" >> /etc/motd
+if [ -z "`grep -F 'legal information:' /etc/motd`" ]; then
+echo "legal information:" >> /etc/motd
 echo "This is a private system, all unauthorized access is prohibited" >> /etc/motd 
 fi
 
-if [ -z "`grep 'legal disclaimer' /etc/issue.net`" ]; then
-echo "legal disclaimer:" >> /etc/issue.net
+if [ -z "`grep -F 'legal information:' /etc/issue.net`" ]; then
+echo "legal information:" >> /etc/issue.net
 echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue.net
 fi
 
-if [ -z "`grep 'legal information' /etc/issue`" ]; then
+if [ -z "`grep -F 'legal information:' /etc/issue`" ]; then
 echo "hostname:  \n tty: \l " >> /etc/issue
 echo "legal information:" >> /etc/issue
 echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue

@@ -7,11 +7,12 @@
 info " Update and optimize filesystems "
 
 # hacer una copia de seguridad del fstab
-cp -p /etc/fstab /etc/fstab.orig
+if [ ! -f "/etc/fstab.orig" ]; then
+	cp -p /etc/fstab /etc/fstab.orig
+fi
 
 # umount and optimice boot
 BOOT=$(cat /etc/mtab | grep "/boot " | awk '{print $1}')
-HOME=$(cat /etc/mtab | grep "/home " | awk '{print $1}')
 
 # check boot
 umount $BOOT
@@ -23,40 +24,40 @@ tune2fs -O extents,uninit_bg,dir_index $BOOT
 # disable journal
 tune2fs -O ^has_journal $BOOT
 
-# cambiar el fstab a ext4
-sed -i -e "/\/boot/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
+# crear una copia de trabajo de fstab
+cp -p /etc/fstab /etc/fstab.bak
 
-# cambiar a defaults
-# $SED -i -e "s/defaults,noatime/${EXT4_FLAGS}/" /etc/fstab
-# awk '/\/dev\/appvg\/home/{$4="defaults,nodev"}{print}' /etc/fstab
+# cambiar el fstab a ext4
+sed -i -e "/\/boot/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab.bak
+
+# optimize all filesystem flags
+awk '/ext4/{$4="'"$EXT4_FLAGS"'"}{print}' /etc/fstab.bak > /etc/fstab.bak
+awk '/xfs/{$4="'"$XFS_FLAGS"'"}{print}' /etc/fstab > /etc/fstab.bak
+
+# change boot, root
+awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" '/\/boot/{$4=f}{print}' /etc/fstab.bak > /etc/fstab.bak
+awk -v f="$EXT4_FLAGS,$ROOT_FLAGS" '/\/ /{$4=f}{print}' /etc/fstab.bak > /etc/fstab.bak
 
 e2fsck -fDC0 $BOOT
 
 # HOME
-umount $HOME
-e2fsck -f $HOME
+HOME=$(cat /etc/mtab | grep "/home " | awk '{print $1}')
+fshome=$(cat /etc/mtab | grep "/home " | awk '{print $3}')
 
+umount $HOME
+
+if [ "$fshome" == 'ext4' ]; then
+e2fsck -f $HOME
 # convert to ext4
 tune2fs -O extents,uninit_bg,dir_index $HOME
-
 # cambiar el fstab
-sed -i -e "/\/home/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
-
-# cambiar a defaults
-# $SED -i -e "s/defaults,noatime/${EXT4_FLAGS}/" /etc/fstab
-
+sed -i -e "/\/home/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab.bak > /etc/fstab.bak
+awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" '/\/home/{$4=f}{print}' /etc/fstab.bak > /etc/fstab.bak
 e2fsck -fDC0 $HOME
+fi
 
-# add ext4 and xfs flags to fstab entries
-# TODO
-# obtener el blkid
-#UUID=$(blkid | grep sda$NUMBER | grep -oP 'UUID=[0-9a-zA-Z"-]+' | cut -d '"' -f2)
-
-# comentar la anterior linea de HOME
-#$SED -i -e "/\/home/ s/UUID=/#UUID=/" /etc/fstab
-
-# y agregar el nuevo HOME
-#$ECHO "UUID=$UUID /home ext4  $HOME_FLAGS,errors=remount-ro 0 2" >> /etc/fstab
+# reemplazar el actual fstab
+cp -p /etc/fstab.bak /etc/fstab
 
 # remount filesystem
 mount -a
