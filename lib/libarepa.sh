@@ -8,16 +8,8 @@
 
 VERSION='0.1'
 
-## pre-configure apt
-if [ ! -f "/etc/apt/apt.conf.d/80update" ]; then
-	cp files/apt/80update /etc/apt/apt.conf.d/
-	if [ "$REPO_TYPE" == "local" ]; then
-	    cp files/apt/*.list /etc/apt/sources.list.d/
-	fi
-	$APT update
-	# instalamos la lista de keyrings
-	$APT -y install $KEYRINGS
-fi
+
+## functions 
 
 export NORMAL='\033[0m'
 export RED='\033[1;31m'
@@ -25,15 +17,6 @@ export GREEN='\033[1;32m'
 export YELLOW='\033[1;33m'
 export WHITE='\033[1;37m'
 export BLUE='\033[1;34m'
-
-if [ -z $(which lsb_release) ]; then
-	echo "arepalinux warning: lsb-release is required"
-	$APT -y install lsb-release
-fi
-if [ -z $(which lshw) ]; then
-	echo "arepalinux warning: lshw is required"
-	$APT -y install lshw
-fi
 
 logMessage () {
   scriptname=$(basename $0)

@@ -1,5 +1,5 @@
 #!/bin/bash
-# 98-selinux
+# 90-selinux
 #
 # Install basic functionality of selinux
 #

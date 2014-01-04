@@ -64,6 +64,23 @@ get_role()
 	fi	
 }
 
+check_name()
+{
+	if [[ "${#1}" -gt 20 ]] || [[ "${#1}" -lt 2 ]]; then
+		usage_err "hostaname '$1' is an invalid name"
+	fi
+}
+
+check_domain()
+{
+	if [[ "${#1}" -gt 254 ]] || [[ "${#1}" -lt 2 ]]; then
+		usage_err "domain name '$1' is an invalid domain name"
+	fi
+	if [ -z echo "${#1}" | grep -P '(?=^.{5,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)' ]; then
+		usage_err "domain name '$1' is an invalid domain name"
+	fi
+}
+
 
 ### main execution program ###
 
@@ -71,11 +88,12 @@ NAME=''
 SIZE=''
 IP=''
 IFACE=''
-LAN_INTERFACE='eth0'
+LAN_INTERFACE=''
 DIST=''
 TEMPLATE=''
 HOSTNAME=''
 SERVERNAME=''
+STEP=''
 
 usage() {
 	echo ""
@@ -116,7 +134,7 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # processing arguments
-ARGS=`getopt -n$0 -u -a -o r:n:D:l:h --longoptions packages:,debug,verbose,version,help,lan::,domain::,role::,hostname:: -- "$@"`
+ARGS=`getopt -n$0 -u -a -o r:n:D:l:h --longoptions packages:,debug,verbose,version,help,lan::,step::,domain::,role::,hostname:: -- "$@"`
 eval set -- "$ARGS"
 
 while [ $# -gt 0 ]; do
@@ -143,6 +161,11 @@ while [ $# -gt 0 ]; do
             LAN_INTERFACE=$2
             shift
             ;;
+        --step)
+			optarg_check $1 "$2"
+            STEP=$2
+            shift
+            ;;            
         --packages)
 			optarg_check $1 "$2"
 			PACKAGES="$2"
@@ -178,9 +201,12 @@ done
 
 main()
 {
-## auto-discover and autoinstall packages
-DIST=`get_distribution`
-SUITE=`get_suite`
+## discover Debian suite (ex: wheezy)
+SUITE=`cat /etc/apt/sources.list | grep -F "deb http:" | head -n1 |  awk '{ print $3}' | cut -d '/' -f1`
+DIST="Debian"
+
+# DIST=`get_distribution`
+# SUITE=`get_suite`
 
 	# si no pasamos ningun parametro
 	if [ $# = 0 ]; then
@@ -194,6 +220,13 @@ SUITE=`get_suite`
 SERVERNAME=$NAME.$DOMAIN
 # get first account
 ACCOUNT=`getent passwd | grep 1000 | cut -d':' -f1`
+hooksdir
+
+# FS OPTIONS
+BOOTFS=$(cat /etc/fstab | grep boot | grep UUID | awk '{print $3}')
+ROOTFS=$(cat /etc/fstab | grep " / " | grep UUID | awk '{print $3}')
+
+
 LAN_IPADDR="$(ip addr show $LAN_INTERFACE | awk "/^.*inet.*$LAN_INTERFACE\$/{print \$2}" | sed -n '1 s,/.*,,p')"
 if [ -z "$LAN_INTERFACE" ]; then
 	error "LAN Interface its not defined"
@@ -203,7 +236,6 @@ if [ -z "$LAN_IPADDR" ]; then
 	error "LAN Interface $LAN_INTERFACE not configured, please assign a IP Address"
 	exit 1
 fi
-
 GATEWAY=$(get_gateway)
 # network options
 NETMASK=$(get_netmask $LAN_INTERFACE)
@@ -211,11 +243,19 @@ NETWORK=$(get_network $GATEWAY $NETMASK)
 SUBNET=$(get_subnet $LAN_INTERFACE)
 BROADCAST=$(get_broadcast $LAN_INTERFACE)
 
-# FS OPTIONS
-BOOTFS=$(cat /etc/fstab | grep boot | grep UUID | awk '{print $3}')
-ROOTFS=$(cat /etc/fstab | grep " / " | grep UUID | awk '{print $3}')
-
-hooksdir
+if [ ! -z "$STEP" ]; then
+	debug "Resuming Arepa Linux installation"
+	step=$(find $HOOKSDIR/* -maxdepth 1 -executable -type f -name "$STEP-*")
+	if [ -n "$step" ]; then
+		read -p "Continue with $step (y/n)?" WORK
+		if [ "$WORK" != "y" ]; then
+			exit 0
+		else
+			. $step
+		fi
+	fi
+	exit 0
+fi
 
 debug "= Arepa Linux Installation Summary = "
 ## show summary
@@ -228,9 +268,7 @@ show_summary
 			exit 0
 		fi
 	fi
-	# running debian hooks
-	hooks="$HOOKSDIR"
-	for f in $(find $hooks/* -maxdepth 1 -executable -type f ! -iname "*.md" ! -iname ".*" | sort --numeric-sort); do
+	for f in $(find $HOOKSDIR/* -maxdepth 1 -executable -type f ! -iname "*.md" ! -iname ".*" | sort --numeric-sort); do
 		if [ "$WAIT" == 'true' ]; then 
 			read -p "Continue with $f (y/n)?" WORK
 			if [ "$WORK" != "y" ]; then

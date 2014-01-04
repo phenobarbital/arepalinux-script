@@ -22,7 +22,6 @@ esac
 
 # add all required modules
 modules=$(grep "ip_tables" /etc/modules)
-
 if [ -z "$modules" ]; then
 cat <<EOF >> /etc/modules
 ip_tables
@@ -35,6 +34,10 @@ fi
 
 # blacklist pc speaker
 echo "blacklist pcspkr" > /etc/modprobe.d/blacklist-pcspkr.conf
+
+
+# install firmware free and non-free
+install_package firmware-linux-free firmware-linux-nonfree
 
 # list all drivers in system
 # TODO build especific options for various hardware
@@ -62,9 +65,6 @@ for device in $(lspci | awk '{ print $1 }'); do
         fi
     fi
 done
-
-# install firmware free and non-free
-install_package firmware-linux-free firmware-linux-nonfree
 
 # AMD and Intel especific options
 

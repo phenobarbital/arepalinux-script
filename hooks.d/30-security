@@ -11,6 +11,16 @@ info " Secure System "
 chage -M 365 $ACCOUNT
 chage -M 768 root
 
+# remover suid bit a "su"
+chmod -s /bin/su
+
+# y a passwd
+chmod -s /usr/bin/passwd
+chmod -s /usr/bin/wall
+
+# asegurar archivos basicos:
+chmod 0754 /etc/profile /etc/login.defs /etc/init.d/rc
+
 # change default UMASK
 sed -i -e 's/^UMASK.*$/UMASK          027/' /etc/login.defs
 sed -i -e 's/^umask.*$/umask 027/' /etc/init.d/rc
@@ -20,6 +30,15 @@ echo 'nobody' >> /etc/ftpusers
 
 # disable firewire module
 echo "blacklist firewire-ohci" > /etc/modprobe.d/blacklist-firewire.conf
+
+# asegurar tmp
+if [ -z "`grep 'secure tmp' /etc/fstab`" ]; then
+cat <<EOF >> /etc/fstab
+# secure tmp
+tmpfs /tmp tmpfs nosuid,nodev,rw 0 0
+tmpfs /run tmpfs rw,nodev,relatime,size=188756k,mode=755 0 0
+EOF
+fi
 
 if [ -z "`grep -F 'legal information:' /etc/motd`" ]; then
 echo "legal information:" >> /etc/motd

@@ -24,20 +24,31 @@ mirror="http://$REPO_URL/debian/"
 fi
 
 # oficial repositories
-cat <<E_O_APT > /etc/apt/sources.list.d/debian.list
+cat <<E_O_APT > /etc/apt/sources.list.d/$SUITE.list
 # oficial
 deb $mirror $SUITE $REPO_SECTIONS
-# updates
-#deb http://http.debian.net/debian $SUITE-updates main
-# security
-#deb http://security.debian.org/ $SUITE/updates main
 E_O_APT
+
+# backport repositories
+cat <<E_O_APT > /etc/apt/sources.list.d/backports.list
+deb $mirror $SUITE-backports $REPO_SECTIONS
+E_O_APT
+
+if [ "$ENABLE_SECURITY" == "yes" ]; then
+# security and update repositories
+cat <<E_O_APT > /etc/apt/sources.list.d/security.list
+# updates
+deb $mirror $SUITE-updates main
+# security
+deb http://security.debian.org/ $SUITE/updates main
+E_O_APT
+fi
 
 cat <<EOF > /etc/apt/apt.conf.d/80-update
 Acquire::Check-Valid-Until "false";
 EOF
 
-cat <<EOF > /etc/apt/preferences.d/$DIST.pref
+cat <<EOF > /etc/apt/preferences.d/$SUITE.pref
 Package: *
 Pin: release n=$SUITE
 Pin-Priority: 100
@@ -45,16 +56,11 @@ Pin-Priority: 100
 Package: *
 Pin: release n=$SUITE-updates
 Pin-Priority: 999
+
 EOF
 
 if [ "$ENABLE_BACKPORTS" == "yes" ]; then
-# backport repositories
-cat <<E_O_APT > /etc/apt/sources.list.d/backports.list
-deb $mirror $SUITE-backports $REPO_SECTIONS
-E_O_APT
-
-cat <<EOF >> /etc/apt/preferences.d/$DIST.pref
-
+cat <<EOF >> /etc/apt/preferences.d/$SUITE.pref
 Package: *
 Pin: release n=$SUITE-backports
 Pin-Priority: 999
@@ -68,15 +74,32 @@ APT::Clean-Installed "true";
 APT::Get:AutomaticRemove "true";
 APT::Get::HideAutoRemove "false";
 APT::Get:Show-Upgraded "true";
-APT::Install-Recommends "false";
 EOF
 
+if [ "$APT_RECOMMENDS" == "yes" ]; then
 cat <<EOF > /etc/apt/apt.conf.d/90-recommends
-APT::Install-Recommends "false";
+APT::Install-Recommends "true";
 EOF
+fi
 
 #
 #  Now that the sources have been setup make sure the system is up to date.
 #
 $APT update
+
+# install keyring list
+$APT -y install $KEYRINGS
+	
+# update and upgrade system
 $APT upgrade -y
+aptitude -y full-upgrade
+
+if [ -z $(which lsb_release) ]; then
+	echo "arepalinux warning: lsb-release is required"
+	$APT -y install lsb-release
+fi
+
+if [ -z $(which lshw) ]; then
+	echo "arepalinux warning: lshw is required"
+	$APT -y install lshw
+fi

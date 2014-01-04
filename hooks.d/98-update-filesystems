@@ -1,5 +1,5 @@
 #!/bin/bash
-# 07-update-filesystems
+# 98-update-filesystems
 #
 # optimice filesystem access
 #
@@ -13,13 +13,13 @@ fi
 
 # optimize all filesystem flags
 awk -v f="$EXT4_FLAGS" '/ext4/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
-cp -y /etc/fstab.bak /etc/fstab
+cp -p /etc/fstab.bak /etc/fstab
 
 awk -v f="$XFS_FLAGS" '/xfs/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
-cp -y /etc/fstab.bak /etc/fstab
+cp -p /etc/fstab.bak /etc/fstab
 
 awk -v f="$EXT4_FLAGS,$ROOT_FLAGS" '/\/ /{$4=f}{print}' /etc/fstab > /etc/fstab.bak
-cp -y /etc/fstab.bak /etc/fstab
+cp -p /etc/fstab.bak /etc/fstab
 
 # umount and optimice boot
 BOOT=$(cat /etc/mtab | grep "/boot " | awk '{print $1}')
@@ -52,7 +52,7 @@ tune2fs -O extents,uninit_bg,dir_index $HOME
 sed -i -e "/\/home/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
 # change filesystem flags
 awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" '/\/home/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
-cp -y /etc/fstab.bak /etc/fstab
+cp -p /etc/fstab.bak /etc/fstab
 e2fsck -fDC0 $HOME
 fi
 fi

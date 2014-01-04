@@ -14,7 +14,7 @@ hwclock --systohc
 service ntp restart
 
 # disable exim4
-aptitude purge exim4 exim4-daemon-light
+aptitude -y purge exim4 exim4-daemon-light
 # configure postfix for local system
 install_package postfix
 

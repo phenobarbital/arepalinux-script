@@ -1,5 +1,5 @@
 #!/bin/bash
-# 90-configure-utilities
+# 96-install-utilities
 #
 #  This script install and configure vim, bashrc, profile and other utilities in the
 #  installation.
