@@ -11,53 +11,51 @@ if [ ! -f "/etc/fstab.orig" ]; then
 	cp -p /etc/fstab /etc/fstab.orig
 fi
 
+# optimize all filesystem flags
+awk -v f="$EXT4_FLAGS" '/ext4/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
+cp -y /etc/fstab.bak /etc/fstab
+
+awk -v f="$XFS_FLAGS" '/xfs/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
+cp -y /etc/fstab.bak /etc/fstab
+
+awk -v f="$EXT4_FLAGS,$ROOT_FLAGS" '/\/ /{$4=f}{print}' /etc/fstab > /etc/fstab.bak
+cp -y /etc/fstab.bak /etc/fstab
+
 # umount and optimice boot
 BOOT=$(cat /etc/mtab | grep "/boot " | awk '{print $1}')
-
-# check boot
+if [ ! -z "$BOOT" ]; then
+# check BOOT
 umount $BOOT
 e2fsck -f $BOOT
-
 # convert to ext4
 tune2fs -O extents,uninit_bg,dir_index $BOOT
-
 # disable journal
 tune2fs -O ^has_journal $BOOT
-
-# crear una copia de trabajo de fstab
-cp -p /etc/fstab /etc/fstab.bak
-
 # cambiar el fstab a ext4
-sed -i -e "/\/boot/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab.bak
-
-# optimize all filesystem flags
-awk '/ext4/{$4="'"$EXT4_FLAGS"'"}{print}' /etc/fstab.bak > /etc/fstab.bak
-awk '/xfs/{$4="'"$XFS_FLAGS"'"}{print}' /etc/fstab > /etc/fstab.bak
-
-# change boot, root
-awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" '/\/boot/{$4=f}{print}' /etc/fstab.bak > /etc/fstab.bak
-awk -v f="$EXT4_FLAGS,$ROOT_FLAGS" '/\/ /{$4=f}{print}' /etc/fstab.bak > /etc/fstab.bak
-
+sed -i -e "/\/boot/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
+# change boot filesystem flags
+awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" '/\/boot/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
+cp -p /etc/fstab.bak /etc/fstab
 e2fsck -fDC0 $BOOT
+fi
 
-# HOME
+# check HOME
 HOME=$(cat /etc/mtab | grep "/home " | awk '{print $1}')
 fshome=$(cat /etc/mtab | grep "/home " | awk '{print $3}')
-
+if [ ! -z "$BOOT" ]; then
 umount $HOME
-
 if [ "$fshome" == 'ext4' ]; then
 e2fsck -f $HOME
 # convert to ext4
 tune2fs -O extents,uninit_bg,dir_index $HOME
-# cambiar el fstab
-sed -i -e "/\/home/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab.bak > /etc/fstab.bak
-awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" '/\/home/{$4=f}{print}' /etc/fstab.bak > /etc/fstab.bak
+# cambiar el fstab a ext4 (de estar en ext3)
+sed -i -e "/\/home/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
+# change filesystem flags
+awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" '/\/home/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
+cp -y /etc/fstab.bak /etc/fstab
 e2fsck -fDC0 $HOME
 fi
-
-# reemplazar el actual fstab
-cp -p /etc/fstab.bak /etc/fstab
+fi
 
 # remount filesystem
 mount -a

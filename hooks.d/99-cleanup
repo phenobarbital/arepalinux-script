@@ -28,7 +28,7 @@ chmod 0754 /etc/profile /etc/login.defs /etc/init.d/rc
 if [ -z "`grep 'secure tmp' /etc/fstab`" ]; then
 cat <<EOF >> /etc/fstab
 # secure tmp
-tmpfs /tmp tmpfs nosuid,noexec,nodev,rw 0 0
+tmpfs /tmp tmpfs nosuid,nodev,rw 0 0
 tmpfs /run tmpfs rw,nosuid,noexec,nodev,relatime,size=188756k,mode=755 0 0
 EOF
 fi

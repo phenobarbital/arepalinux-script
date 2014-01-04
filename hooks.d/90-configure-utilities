@@ -174,4 +174,6 @@ sed -i 's/^zlib.output_compression \= Off/zlib.output_compression \= On/' /etc/p
 
 # install locate
 install_package locate
+
+warning "update locate database, please wait ..."
 updatedb

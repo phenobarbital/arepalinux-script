@@ -1,14 +1,14 @@
 #!/bin/bash
 # script para optimizar el acceso a disco de sistemas con noop o deadline
 # autor: Jesus Lara <jesuslara@gmail.com>
-DISKS=( sda )
+disks=( sda )
 # parameters
 SCHEDULER="deadline"
 ROTATIONAL=0
 QUEUEDEPTH=256
 BLOCKDEV=16384
 # iteration
-for DISK in $DISKS
+for DISK in "${disks[@]}"
 do
         echo "Change I/O elevator to $SCHEDULER"
         echo $SCHEDULER > /sys/block/$DISK/queue/scheduler

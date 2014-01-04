@@ -32,7 +32,7 @@ if [ -z $(which lsb_release) ]; then
 fi
 if [ -z $(which lshw) ]; then
 	echo "arepalinux warning: lshw is required"
-	$APT -y install lsb-release
+	$APT -y install lshw
 fi
 
 logMessage () {

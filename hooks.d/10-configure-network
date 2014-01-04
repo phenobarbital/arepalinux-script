@@ -11,7 +11,9 @@ info " Create Network Configuration "
 if [ -z $(which ovs-vsctl) ]; then
 	install_package bridge-utils openvswitch-switch
 	# configure openvswitch module (TODO: kernel < 3.5)
-	install_package openvswitch-datapath-dkms openvswitch-controller
+	service openvswitch-switch restart
+	install_package openvswitch-datapath-dkms
+	install_package openvswitch-controller
 fi
 
 # get first interface
@@ -84,5 +86,5 @@ EOF
 
 # configure interface in openvswitch
 ovs-vsctl add-br $BRIDGENAME
-ovs-vsctl add-if $BRIDGENAME $firstiface
+ovs-vsctl add-port $BRIDGENAME $firstiface
 fi

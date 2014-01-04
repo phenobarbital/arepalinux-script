@@ -6,7 +6,7 @@
 # Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
 # términos de la Licencia Pública General de GNU (versión 3).
 
-if [ "$DISABLE_SELINUX" != 'yes' ]; then
+if [ "$DISABLE_DNSCACHE" != 'yes' ]; then
 
 info " Install dns cache (dnsmasq) "
 

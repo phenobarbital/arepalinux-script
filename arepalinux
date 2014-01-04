@@ -22,15 +22,16 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=0
-FILE_NAME_0=1929;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Farepalinux.sh;0;4
-FILE_NAME_1=4297;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F30-security;0;4
-FILE_NAME_2=1027;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F60-configure-dns;0;4
-FILE_NAME_3=543;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F11-install-software;0;4
-FILE_NAME_4=464;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F99-cleanup;0;4
-FILE_NAME_5=345;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F98-selinux;0;4
-FILE_NAME_6=2467;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Flib%2Flibarepa.sh;0;4
-FILE_NAME_7=837;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Ftemplates.d%2Fxserver;0;4
+current_page=8
+FILE_NAME_0=5415;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Farepalinux.sh;0;4
+FILE_NAME_1=699;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Flib%2Flibarepa.sh;0;4
+FILE_NAME_2=1433;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fetc%2Farepalinux.conf;0;4
+FILE_NAME_3=1074;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F07-update-filesystems;0;4
+FILE_NAME_4=331;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F03-change-grub;0;4
+FILE_NAME_5=1024;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F30-security;0;4
+FILE_NAME_6=649;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F99-cleanup;0;4
+FILE_NAME_7=242;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F60-configure-dns;0;4
+FILE_NAME_8=133;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Ffiles%2Foptimicedisk.sh;0;4
 
 [VTE]
 last_dir=/home/jesuslara
