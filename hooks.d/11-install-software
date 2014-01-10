@@ -7,11 +7,11 @@
 
 info " Install basic software and utilities "
 
-$APT -y install sudo locate rsync bash-completion wget ntp tcpdump ntpdate finger links lynx ethtool less screen tree curl wget telnet iputils-ping dnsutils lsof
+$APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx ethtool less screen tree curl wget telnet iputils-ping dnsutils lsof
 
 if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
 	install_package laptop-detect
-	if [ -z "$(laptop-detect)"]; then
+	if [ "$(laptop-detect)" -eq 0 ]; then
 		# We're a laptop/Notebook
 		install_package laptop-mode-tools task-laptop xorg-driver-synaptics
 	fi
@@ -21,6 +21,7 @@ fi
 
 if [ "$MODE" == "server" ]; then
 # configure NTP
+install_package ntp
 hwclock --systohc
 service ntp restart
 
@@ -68,7 +69,7 @@ case "$videodriver" in
 		fi
 		;;
 	"radeon")
-		install_package xserver-xorg-video-radeon radeontool
+		install_package xserver-xorg-video-radeon radeontool firmware-linux
 		if [ -z "`grep 'modeset' /etc/default/grub`" ]; then
 			sed -i -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 $GRUB_RADEON\"/" /etc/default/grub
 			cp files/xorg/radeon/* /usr/share/X11/xorg.conf.d/

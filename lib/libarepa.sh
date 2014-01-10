@@ -149,6 +149,28 @@ _MSG
 echo "$SUMMARY"
 }
 
+
+install_summary()
+{
+
+sshport=$(cat /etc/ssh/sshd_config | grep Port | cut -d ' ' -f2)
+
+SUMMARY=$(cat << _MSG
+ ---------- [ Status of Installation ] ---------------
+
+  Mode : .......................... $MODE  
+  Name : .......................... $NAME
+  ServerName : .................... $SERVERNAME
+  SSH Port : ...................... $sshport
+  IP : ............................ $LAN_IPADDR
+   
+ ---------------------------------------------------------------
+_MSG
+)
+
+echo "$SUMMARY"
+}
+
 ### domain info
 
 define_domain()

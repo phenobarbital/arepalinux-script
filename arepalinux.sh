@@ -103,10 +103,11 @@ HOSTNAME=''
 SERVERNAME=''
 STEP=''
 MODE='desktop'
+DEBUG='false'
 
 usage() {
-	echo "Usage: $(basename $0) [-m|--mode=<desktop|server|workstation>] [-n|--hostname=<hostname>] [-D|--domain=DOMAIN] [-r|--role=<role-name>]
-        [-l|--lan=<lan interface>] [--packages=<comma-separated package list>] [--debug] [-h|--help]"  
+	echo "Usage: $(basename $0) [-m|--mode=<desktop|server|workstation>] [-n|--hostname=<hostname>] [-D|--domain=DOMAIN]
+        [-r|--role=<role-name>] [-l|--lan=<lan interface>] [--packages=<comma-separated package list>] [--debug] [-h|--help]"  
     return 1
 }
 
@@ -187,7 +188,7 @@ while [ $# -gt 0 ]; do
 			shift
 			;;           
         --debug)
-            VERBOSE='true'
+            DEBUG='true'
             ;;
         --verbose)
             VERBOSE='true'
@@ -283,7 +284,7 @@ show_summary
 		fi
 	fi
 	for f in $(find $HOOKSDIR/* -maxdepth 1 -executable -type f ! -iname "*.md" ! -iname ".*" | sort --numeric-sort); do
-		if [ "$WAIT" == 'true' ]; then 
+		if [ "$DEBUG" == 'true' ]; then 
 			read -p "Continue with $f (y/n)?" WORK
 			if [ "$WORK" != "y" ]; then
 				exit 0
@@ -295,10 +296,23 @@ show_summary
 		fi
 	done
 	
-	# executing roles
+	# executing a role
+	if [ ! -z "$ROLENAME" ]; then
+		get_role
+		. $ROLE
+		run
+		if [ "$?" -ne "0" ]; then
+			error "failed to execute role $ROLENAME"
+		fi
+	fi
 	
 	# installing packages list
+	if [ ! -z "$PACKAGES" ]; then
+		install_package $(echo $PACKAGES | tr ',' ' ')
+	fi
 	
+	# installation summary:
+	install_summary
 }
 
 # = end = #

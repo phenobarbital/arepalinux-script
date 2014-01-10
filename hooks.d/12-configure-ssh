@@ -6,7 +6,7 @@
 
 info " Configure SSH "
 
-$APT -y install ssh openssh-server sudo
+$APT -y install ssh openssh-server sudo ssh-askpass
 
 #
 # Generate the Host RSA Key
