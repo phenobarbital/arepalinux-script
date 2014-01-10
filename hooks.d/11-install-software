@@ -39,6 +39,9 @@ if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
 # Prepare for Video Support
 info "Detecting Video Card information, please wait ..."
 
+# ejecutar
+mkfontdir /var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType
+
 # discover video display model
 videodriver=$(lspci -vv -s $(lspci | grep -E 'VGA|Display' | head -n1 | awk '{print $1}') | grep -F "Kernel driver" | cut -d ':' -f2 | tr -d ' ')
 if [ -z "$videodriver" ]; then
@@ -60,6 +63,8 @@ case "$videodriver" in
 			echo "INTEL_BATCH=1" >> /etc/environment
 			sed -i -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 $GRUB_INTEL\"/" /etc/default/grub
 			cp files/xorg/intel/* /usr/share/X11/xorg.conf.d/
+			echo "options i915 modeset=1" > /etc/modprobe.d/i915-kms.conf
+			echo "INTEL_BATCH=1" > /etc/environment
 		fi
 		;;
 	"radeon")
