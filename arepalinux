@@ -22,16 +22,17 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=8
-FILE_NAME_0=5415;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Farepalinux.sh;0;4
-FILE_NAME_1=699;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Flib%2Flibarepa.sh;0;4
-FILE_NAME_2=1433;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fetc%2Farepalinux.conf;0;4
-FILE_NAME_3=1074;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F07-update-filesystems;0;4
-FILE_NAME_4=331;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F03-change-grub;0;4
-FILE_NAME_5=1024;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F30-security;0;4
-FILE_NAME_6=649;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F99-cleanup;0;4
-FILE_NAME_7=242;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F60-configure-dns;0;4
-FILE_NAME_8=133;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Ffiles%2Foptimicedisk.sh;0;4
+current_page=9
+FILE_NAME_0=6503;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Farepalinux.sh;0;4
+FILE_NAME_1=375;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Flib%2Flibarepa.sh;0;4
+FILE_NAME_2=259;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fetc%2Farepalinux.conf;0;4
+FILE_NAME_3=722;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F01-configure-apt;0;4
+FILE_NAME_4=197;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F05-enable-modules;0;4
+FILE_NAME_5=0;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F03-change-grub;0;4
+FILE_NAME_6=517;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F11-install-software;0;4
+FILE_NAME_7=0;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F30-security;0;4
+FILE_NAME_8=337;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F98-update-filesystems;0;4
+FILE_NAME_9=2631;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F04-configure-sysctl;0;4
 
 [VTE]
 last_dir=/home/jesuslara

@@ -9,9 +9,14 @@ Install, configure, optimice and secure every aspect in Debian System.
 Dependencies
 ------------
 
-Arepalinux need this software for work:
-- lsb-release
-- lshw
+ArepaLinux Script require a Debian netinstall basic with this partition schema:
+
+- Basic Debian netinstall
+
+= Partition Schema
+- /boot (Primary, 512MB, ext2|ext3|ext4, active)
+- / (ext4)
+
 
 This script is released under GPL version 3.0.
 
