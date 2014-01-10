@@ -81,6 +81,14 @@ check_domain()
 	fi
 }
 
+check_mode()
+{
+	if [[ "$1" = "server" || "$1" = "workstation" || "$1" = "desktop" ]]; then
+		return 0
+	else
+		usage_err "option '$1' invalid server mode"
+	fi
+}
 
 ### main execution program ###
 
@@ -94,10 +102,11 @@ TEMPLATE=''
 HOSTNAME=''
 SERVERNAME=''
 STEP=''
+MODE='desktop'
 
 usage() {
 	echo ""
-	echo "Usage: $(basename $0) [-n|--hostname=<hostname>] [-D|--domain=DOMAIN] [-r|--role=<role-name>]
+	echo "Usage: $(basename $0) [-m|--mode=<desktop|server|workstation>] [-n|--hostname=<hostname>] [-D|--domain=DOMAIN] [-r|--role=<role-name>]
         [-l|--lan=<lan interface>] [--packages=<comma-separated package list>] [--debug] [-h|--help]"  
     return 1
 }
@@ -114,6 +123,7 @@ Options:
   -n, --hostname             specify the name of the debian server
   -r, --role                 role-based script for running in server after installation
   -D, --domain               define Domain Name
+  -m, --mode                 mode for system installation, default mode: desktop
   -l, --lan                  define LAN Interface (ej: eth0)
   --packages                 Extra comma-separated list of packages
   --debug                    Enable debugging information
@@ -134,11 +144,17 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # processing arguments
-ARGS=`getopt -n$0 -u -a -o r:n:D:l:h --longoptions packages:,debug,verbose,version,help,lan::,step::,domain::,role::,hostname:: -- "$@"`
+ARGS=`getopt -n$0 -u -a -o r:n:m:D:l:h --longoptions packages:,debug,verbose,version,help,mode::,lan::,step::,domain::,role::,hostname:: -- "$@"`
 eval set -- "$ARGS"
 
 while [ $# -gt 0 ]; do
 	case "$1" in
+        -m|--mode)
+			optarg_check $1 "$2"
+            check_mode "$2"
+            MODE=$2
+            shift
+            ;;	
         -n|--hostname)
 			optarg_check $1 "$2"
             check_name "$2"
