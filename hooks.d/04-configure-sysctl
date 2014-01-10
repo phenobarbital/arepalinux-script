@@ -4,6 +4,32 @@
 # configure sysctl
 #
 
+if [ "$ENABLE_FORWARDING" == 'yes' ]; then
+	CHANGES=$(grep -F "net.ipv4.ip_forward = 1" /etc/sysctl.conf | tail)
+	if [ -z "$CHANGES" ]; then
+cat <<EOF >> /etc/sysctl.conf
+
+# enable ipv4 forwarding (only virtual servers)
+net.ipv4.ip_forward = 1
+
+EOF
+	fi
+fi
+
+if [ "$DISABLE_IPV6" == 'yes' ]; then
+	CHANGES=$(grep "^net.ipv6.conf.all.disable_ipv6 = 1" /etc/sysctl.conf | tail)
+	if [ -z "$CHANGES" ]; then
+cat <<EOF >> /etc/sysctl.conf
+
+# disable ipv6
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+
+EOF
+	fi
+fi
+
 CHANGES=$(egrep "vm.vfs_cache_pressure" /etc/sysctl.conf | tail)
 if [ -z "$CHANGES" ]; then
 
@@ -12,17 +38,6 @@ info "Apply sysctl changes"
 # apply patches to sysctl
 cat <<EOF >> /etc/sysctl.conf
 # sysctl config
-
-# enable ipv4 forwarding (only virtual servers)
-net.ipv4.ip_forward = 1
-net.ipv4.conf.all.rp_filter = 1
-net.ipv4.icmp_echo_ignore_broadcasts = 1
-
-# disable ipv6
-net.ipv6.conf.all.disable_ipv6 = 1
-net.ipv6.conf.default.disable_ipv6 = 1
-net.ipv6.conf.lo.disable_ipv6 = 1
-
 # Increase ephermeral IP ports
 net.ipv4.ip_local_port_range = 20000 65000
 
@@ -38,28 +53,6 @@ net.core.wmem_default = 2097152
 # If your servers talk UDP, also up these limits
 net.ipv4.udp_rmem_min = 8192
 net.ipv4.udp_wmem_min = 8192
-
-# ipv4 security
-net.ipv4.conf.all.proxy_arp = 0
-net.ipv4.conf.default.proxy_arp = 0
-net.ipv4.conf.all.accept_redirects = 0
-net.ipv4.conf.all.send_redirects = 0
-net.ipv4.conf.default.send_redirects = 0
-net.ipv4.icmp_echo_ignore_broadcasts = 1
-net.ipv4.conf.all.accept_source_route = 0
-net.ipv4.conf.all.accept_redirects = 0
-net.ipv4.conf.all.secure_redirects = 0
-net.ipv4.conf.all.log_martians = 1
-net.ipv4.conf.all.forwarding = 0
-net.ipv4.conf.default.accept_source_route = 0
-net.ipv4.conf.default.accept_redirects = 0
-net.ipv4.conf.default.secure_redirects = 0
-net.ipv4.icmp_echo_ignore_broadcasts = 1
-net.ipv4.icmp_ignore_bogus_error_responses = 1
-net.ipv4.tcp_syncookies = 1
-net.ipv4.conf.all.rp_filter = 1
-net.ipv4.conf.default.rp_filter = 1
-net.ipv4.tcp_timestamps = 0
 
 ##enable window scaling
 net.ipv4.tcp_window_scaling = 1
@@ -160,9 +153,28 @@ kernel.sched_min_granularity_ns = 100000
 kernel.sched_wakeup_granularity_ns = 100000
 
 # security
+# ipv4 security
+net.ipv4.conf.all.proxy_arp = 0
+net.ipv4.conf.default.proxy_arp = 0
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.all.secure_redirects = 0
 net.ipv4.conf.all.log_martians = 1
 net.ipv4.conf.all.forwarding = 0
-net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.default.secure_redirects = 0
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+net.ipv4.tcp_syncookies = 1
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.tcp_timestamps = 0
+net.ipv4.conf.all.forwarding = 0
 
 EOF
 fi

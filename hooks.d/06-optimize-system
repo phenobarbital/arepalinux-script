@@ -15,6 +15,9 @@ cat <<EOF > /etc/rc.local
 #
 # optimizacion del disco
 /bin/bash /sbin/optimicedisk.sh
+# increase tcp congestion window
+defrt=`ip route | grep "^default" | head -1`
+ip route change $defrt initcwnd 10
 exit 0
 EOF
 chmod a+x /etc/rc.local
