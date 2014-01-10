@@ -105,19 +105,18 @@ VIMRC_EOF
 install_package bash-completion
 
 ## enable bash-completion
-# sed -i '/^#if ! shopt -oq posix; then$/,+6s/# / /' /etc/bash.bashrc
 sed -i '/#if ! shopt.*$/,+6s/#//' /etc/bash.bashrc
 
-if [ -z "`grep 'enable bash-completion' /etc/profile`" ]; then
-cat <<PROFILE_EOF >> /etc/profile
+#if [ -z "`grep 'enable bash-completion' /etc/profile`" ]; then
+#cat <<PROFILE_EOF >> /etc/profile
 
-# enable bash-completion
-if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
-    . /etc/bash_completion
-fi
+## enable bash-completion
+#if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+    #. /etc/bash_completion
+#fi
 
-PROFILE_EOF
-fi
+#PROFILE_EOF
+#fi
 
 # configure bash.bashrc
 ## configure bashrc
@@ -143,7 +142,6 @@ esac
 force_color_prompt=yes
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
     alias grep='grep --color=auto'
     alias egrep='egrep --color=auto'
@@ -163,14 +161,16 @@ install_package xfsprogs btrfs-tools dosfstools ntfs-3g cifs-utils
 #
 # basic programming languages
 #
-install_package ${prefix} perl-modules python-minimal python-pip python-setuptools ruby rubygems php5-cli
+if [[ "$MODE" = "workstation" || "$MODE" = "server" ]]; then
+	install_package ${prefix} perl-modules python-minimal python-pip python-setuptools ruby rubygems php5-cli
 
-# secure php5-cli
-sed -i 's/^register_globals \= On/register_globals \= Off/' /etc/php5/cli/php.ini
-echo 'register_globals = Off' >> /etc/php5/cli/php.ini
-sed -i 's/^expose_php \= On/expose_php \= Off/' /etc/php5/cli/php.ini
-sed -i 's/^allow_url_fopen \= On/allow_url_fopen \= Off/' /etc/php5/cli/php.ini
-sed -i 's/^zlib.output_compression \= Off/zlib.output_compression \= On/' /etc/php5/cli/php.ini
+	# secure php5-cli
+	sed -i 's/^register_globals \= On/register_globals \= Off/' /etc/php5/cli/php.ini
+	echo 'register_globals = Off' >> /etc/php5/cli/php.ini
+	sed -i 's/^expose_php \= On/expose_php \= Off/' /etc/php5/cli/php.ini
+	sed -i 's/^allow_url_fopen \= On/allow_url_fopen \= Off/' /etc/php5/cli/php.ini
+	sed -i 's/^zlib.output_compression \= Off/zlib.output_compression \= On/' /etc/php5/cli/php.ini
+fi
 
 # install locate
 install_package locate

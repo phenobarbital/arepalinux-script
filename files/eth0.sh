@@ -1,0 +1,3 @@
+#!/bin/bash
+defrt=`ip route | grep "^default" | head -1`
+ip route change $defrt initcwnd 10

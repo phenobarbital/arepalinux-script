@@ -105,7 +105,6 @@ STEP=''
 MODE='desktop'
 
 usage() {
-	echo ""
 	echo "Usage: $(basename $0) [-m|--mode=<desktop|server|workstation>] [-n|--hostname=<hostname>] [-D|--domain=DOMAIN] [-r|--role=<role-name>]
         [-l|--lan=<lan interface>] [--packages=<comma-separated package list>] [--debug] [-h|--help]"  
     return 1
@@ -144,7 +143,7 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # processing arguments
-ARGS=`getopt -n$0 -u -a -o r:n:m:D:l:h --longoptions packages:,debug,verbose,version,help,mode::,lan::,step::,domain::,role::,hostname:: -- "$@"`
+ARGS=`getopt -n$0 -u -a -o r:n:m:D:l:h --longoptions packages:,debug,usage,verbose,version,help,mode::,lan::,step::,domain::,role::,hostname:: -- "$@"`
 eval set -- "$ARGS"
 
 while [ $# -gt 0 ]; do
@@ -207,7 +206,6 @@ while [ $# -gt 0 ]; do
             exit 1
             ;;
         *)
-			info "$1"
             usage
             exit 1
             ;;

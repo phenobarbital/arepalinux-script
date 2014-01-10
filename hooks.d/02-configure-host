@@ -28,7 +28,7 @@ sed -i -e '/ *#/d; /^ *$/d' /etc/hosts
 
 # modificar /etc/hosts para incorporar resolucion de nombre de equipo
 echo " " >> /etc/hosts
-echo "# direccion ip del host" >> /etc/hosts
+echo "# Host IP Address" >> /etc/hosts
 echo "$LAN_IPADDR $SERVERNAME $NAME" >> /etc/hosts
 
 # configure hostname

@@ -23,6 +23,8 @@ chage -M 365 $SUPPORT
 
 # == Configure pam.access ==
 
+if [ "$MODE" = "server" ]; then
+
 if [ -z "`grep 'permitir' /etc/security/access.conf`" ]; then
 cat <<EOF >> /etc/security/access.conf
 # permitir exclusivamente accesos locales a root
@@ -40,4 +42,6 @@ cat <<EOF >> /etc/security/access.conf
 # no aceptar accesos a mas nadie
 - : ALL : ALL
 EOF
+fi
+
 fi

@@ -85,12 +85,15 @@ fi
 #
 #  Now that the sources have been setup make sure the system is up to date.
 #
+debug "updating APT database"
 $APT update
 
 # install keyring list
+debug "install Debian keyrings"
 $APT -y install $KEYRINGS
 	
 # update and upgrade system
+debug "upgrade system"
 $APT upgrade -y
 aptitude -y full-upgrade
 

@@ -1,15 +1,19 @@
 #!/bin/bash -e
 # 10-configure-network
 #
-# configure network options for Debian Servers (bridge, openvswitch, etc)
+# configure network options for Debian Servers and workstations (bridge, openvswitch, etc)
 #
 # Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
 # términos de la Licencia Pública General de GNU (versión 3).
 
 info " Create Network Configuration "
 
-install_package bridge-utils
+# backup interfaces
+if [ ! -f "/etc/network/interfaces.orig" ]; then
+	cp /etc/network/interfaces /etc/network/interfaces.orig
+fi
 
+install_package bridge-utils iftop
 if [ -z $(which ovs-vsctl) ]; then
 	install_package openvswitch-switch
 	service openvswitch-switch restart
@@ -17,26 +21,25 @@ if [ -z $(which ovs-vsctl) ]; then
 kernel=$(uname -r)
 # only install if kernel < 3.5.0
 version=$(printf "3.5.0\n${kernel}\n" | sort -Vr | head -n1)
-if [ "$version" != "$kernel" ]; then
-	# configure openvswitch module (TODO: kernel < 3.5)
-	install_package openvswitch-datapath-dkms	
-fi
+	if [ "$version" != "$kernel" ]; then
+		# configure openvswitch module (TODO: kernel < 3.5)
+		install_package openvswitch-datapath-dkms	
+	fi
 	install_package openvswitch-controller
 fi
 
-# get first interface
-firstiface=$(ip route | grep default |  awk '{ print $5}' | tr -d ' ')
+if [ "$DISABLE_DNSCACHE" == "yes" ]; then
+DNS="8.8.8.8"
+else
+DNS='127.0.0.1'
+fi
 
-# configure network only if bridge is not configured
-if [ "$firstiface" != $BRIDGENAME ]; then
-	# backup interfaces
-	cp /etc/network/interfaces /etc/network/interfaces.orig
-
-  # network options
-  ipaddr=$(get_ip $firstiface)
-  netmask=$(get_netmask $firstiface)
-  network=$(get_network $GATEWAY $netmask)
-  broadcast=$(get_broadcast $firstiface)
+# generate a resolv.conf
+cat <<EOF > /etc/resolv.conf
+domain $DOMAIN
+search $DOMAIN
+nameserver $DNS
+EOF
 
 # add loopback configuration
 cat <<EOF > /etc/network/interfaces
@@ -44,6 +47,66 @@ cat <<EOF > /etc/network/interfaces
 auto lo
 iface lo inet loopback
 EOF
+
+# get first interface
+firstiface=$(ip route | grep default |  awk '{ print $5}' | tr -d ' ')
+# network options
+ipaddr=$(get_ip $firstiface)
+netmask=$(get_netmask $firstiface)
+network=$(get_network $GATEWAY $netmask)
+broadcast=$(get_broadcast $firstiface)
+
+if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
+
+	if [ "$USE_DHCP" == "yes" ]; then
+cat <<EOF >> /etc/network/interfaces
+# The lan interface
+auto $firstiface
+iface $firstiface inet dhcp
+    pre-up /sbin/pre-eth0.sh
+    up /sbin/eth0.sh
+EOF
+	else
+cat <<EOF >> /etc/network/interfaces
+# The lan interface
+auto $firstiface
+iface $firstiface inet static
+    address $ipaddr
+    network $network
+    netmask $netmask
+    broadcast  $broadcast
+    gateway $GATEWAY
+    # dns-nameservers
+    dns-domain $DOMAIN
+    dns-search $DOMAIN
+    dns-nameservers $DNS
+    pre-up /sbin/pre-eth0.sh
+    up /sbin/eth0.sh
+EOF
+	fi
+
+# add bridge internal configuration
+cat <<EOF >> /etc/network/interfaces
+
+# The internal lan interface
+auto lan0
+iface lan0 inet static
+    address 172.16.30.1
+    network 172.16.30.0
+    netmask 255.255.255.0
+    broadcast  172.16.30.255
+    # bridge info
+    bridge-ports none
+    bridge-maxwait 1
+    bridge-stp on
+    bridge-fd 0
+EOF
+
+else
+# use server network configuration
+
+# configure network only if bridge is not configured
+if [ "$firstiface" != $BRIDGENAME ]; then
 
 # add bridge net configuration
 cat <<EOF >> /etc/network/interfaces
@@ -68,7 +131,8 @@ iface $BRIDGENAME inet static
     bridge-maxwait 1
     bridge-stp off
     bridge-fd 0
-    pre-up /sbin/eth0.sh
+    pre-up /sbin/pre-eth0.sh
+    up /sbin/eth0.sh
 EOF
 
 # add bridge internal configuration
@@ -88,14 +152,11 @@ iface lan0 inet static
     bridge-fd 0
 EOF
 
-# generate a resolv.conf
-cat <<EOF > /etc/resolv.conf
-domain $DOMAIN
-search $DOMAIN
-nameserver 127.0.0.1
-EOF
-
 # configure interface in openvswitch
 ovs-vsctl add-br $BRIDGENAME
 ovs-vsctl add-port $BRIDGENAME $firstiface
+ovs-vsctl add-br lan0
 fi
+
+fi # END server network configuration
+

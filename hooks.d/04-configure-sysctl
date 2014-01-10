@@ -38,8 +38,6 @@ info "Apply sysctl changes"
 # apply patches to sysctl
 cat <<EOF >> /etc/sysctl.conf
 # sysctl config
-# Increase ephermeral IP ports
-net.ipv4.ip_local_port_range = 20000 65000
 
 # tcp memory
 net.core.optmem_max = 40960
@@ -120,7 +118,7 @@ vm.mmap_min_addr = 4096
 
 # swapping
 vm.swappiness = 0
-vm.vfs_cache_pressure = 40
+vm.vfs_cache_pressure = 20
 
 # fs
 fs.aio-max-nr = 1048576
@@ -142,15 +140,6 @@ kernel.threads-max = 126015
 kernel.core_uses_pid = 1
 kernel.sysrq = 0
 kernel.kptr_restrict = 1
-
-# enable cgroup auto-scheduler
-kernel.sched_autogroup_enabled = 1
-kernel.sched_rt_runtime_us = 950000
-
-# Scheduler-Tuning
-kernel.sched_latency_ns = 5000000
-kernel.sched_min_granularity_ns = 100000
-kernel.sched_wakeup_granularity_ns = 100000
 
 # security
 # ipv4 security
@@ -177,4 +166,36 @@ net.ipv4.tcp_timestamps = 0
 net.ipv4.conf.all.forwarding = 0
 
 EOF
+fi
+
+if [ "$DISABLE_IPV6" == 'yes' ]; then
+cat <<EOF >> /etc/sysctl.conf
+
+# Increase ephermeral IP ports
+net.ipv4.ip_local_port_range = 20000 65000
+
+EOF
+fi
+
+# enable cgroup
+if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
+cat <<EOF >> /etc/sysctl.conf
+
+# enable cgroup auto-scheduler
+kernel.sched_autogroup_enabled = 1
+kernel.sched_rt_runtime_us = 950000
+
+# Scheduler-Tuning
+kernel.sched_latency_ns = 5000000
+kernel.sched_min_granularity_ns = 100000
+kernel.sched_wakeup_granularity_ns = 100000
+
+EOF
+
+# enable cgroup on fstab
+cat <<EOF >> /etc/fstab
+# cgroups
+cgroup  /sys/fs/cgroup  cgroup  defaults  0   0
+EOF
+
 fi

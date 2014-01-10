@@ -13,18 +13,53 @@ install_package shorewall
 # enable shorewall
 sed -i -e "s/startup=0/startup=1/" /etc/default/shorewall
 
+if [ "$DISABLE_IPV6" == 'yes' ]; then
+# - deshabilitar ipv6
+sed -i "s/^DISABLE_IPV6=.*$/DISABLE_IPV6=Yes/" /etc/shorewall/shorewall.conf
+fi
+# optimize shorewall rules
+sed -i "s/^OPTIMIZE=.*$/OPTIMIZE=8/" /etc/shorewall/shorewall.conf
+# - integrate with fail2ban
+sed -i "s/^BLACKLISTNEWONLY=.*$/BLACKLISTNEWONLY=No/" /etc/shorewall/shorewall.conf
+
+# - habilitar ip-forwarding:
+if [ "$ENABLE_FORWARDING" == 'yes' ]; then
+sed -i "s/^IP_FORWARDING=.*$/IP_FORWARDING=On/" /etc/shorewall/shorewall.conf
+cat > /etc/shorewall/masq << EOF
+############################################################################
+# Shorewall Masq
+#INTERFACE    SUBNET
+$BRIDGENAME       172.16.30.0/24
+EOF
+# Esto permite que la red LAN salga a Internet de manera directa y enmascarada (Forward masquerading)
+fi
+
+if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
+firstiface=$(ip route | grep default |  awk '{ print $5}' | tr -d ' ')
 # configure shorewall
 cat > /etc/shorewall/interfaces << EOF
 ############################################################################
 # Shorewall interfaces
 FORMAT 2
 #ZONE   INTERFACE   OPTIONS
-lan     lan0             routefilter,tcpflags,nosmurfs,logmartians,sourceroute=0
-net     $BRIDGENAME        routefilter,routeback,bridge,tcpflags,nosmurfs,sourceroute=0
+lan     lan0             routefilter,routeback,bridge,tcpflags,nosmurfs,logmartians,sourceroute=0
+net     $firstiface        routefilter,tcpflags,nosmurfs,sourceroute=0
 EOF
-# lan es un bridge, conectado a los LXC containers
-# net es la interfaz que nos conecta a Internet (ej: bridge de la eth0)
+else
+# shorewall interfaces
+cat > /etc/shorewall/interfaces << EOF
+############################################################################
+# Shorewall interfaces
+FORMAT 2
+#ZONE   INTERFACE   OPTIONS
+lan     lan0             routefilter,routeback,bridge,tcpflags,nosmurfs,logmartians,sourceroute=0
+net     $BRIDGENAME        routefilter,bridge,tcpflags,nosmurfs,sourceroute=0
+EOF
+fi
 
+# common files
+
+# zones
 cat > /etc/shorewall/zones << EOF
 ############################################################################
 # Shorewall Zones
@@ -34,15 +69,7 @@ fw  firewall
 net ipv4
 lan ipv4
 EOF
-
-cat > /etc/shorewall/masq << EOF
-############################################################################
-# Shorewall Masq
-#INTERFACE    SUBNET
-$BRIDGENAME       172.16.30.0/24
-EOF
-# Esto permite que la red LAN salga a Internet de manera directa y enmascarada (Forward masquerading)
-
+# policies
 cat > /etc/shorewall/policy << EOF
 ############################################################################
 # shorewall policies
@@ -58,9 +85,8 @@ net     lan     DROP
 # The FOLLOWING POLICY MUST BE LAST
 all     all     DROP      info
 EOF
-
+# and rules
 sshport=$(cat /etc/ssh/sshd_config | grep Port | cut -d ' ' -f2)
-
 cat > /etc/shorewall/rules << EOF
 #ACTION     SOURCE  DEST    PROTO   DEST   SOURCE  ORIGINAL RATE   USER/  MARK
 #                                   PORT   PORT(S) DEST     LIMIT  GROUP
@@ -69,18 +95,8 @@ cat > /etc/shorewall/rules << EOF
 ACCEPT:info net     fw     icmp       8
 # Accept NTP udp
 ACCEPT    net     fw    udp     123
-# Acceso SSH
+# SSH Access
 ACCEPT      all     fw     tcp        $sshport    -    -   2/min:3
-# Aceptar PING
+# Accept PING
 Ping(ACCEPT)     net     all
 EOF
-
-# - deshabilitar ipv6
-sed -i "s/^DISABLE_IPV6=.*$/DISABLE_IPV6=Yes/" /etc/shorewall/shorewall.conf
-
-# - integrate with fail2ban
-sed -i "s/^BLACKLISTNEWONLY=.*$/BLACKLISTNEWONLY=No/" /etc/shorewall/shorewall.conf
-
-# - habilitar ip-forwarding:
-sed -i "s/^IP_FORWARDING=.*$/IP_FORWARDING=On/" /etc/shorewall/shorewall.conf
-sed -i "s/^OPTIMIZE=.*$/OPTIMIZE=8/" /etc/shorewall/shorewall.conf

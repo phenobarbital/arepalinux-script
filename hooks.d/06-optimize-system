@@ -15,9 +15,6 @@ cat <<EOF > /etc/rc.local
 #
 # optimizacion del disco
 /bin/bash /sbin/optimicedisk.sh
-# increase tcp congestion window
-defrt=`ip route | grep "^default" | head -1`
-ip route change $defrt initcwnd 10
 exit 0
 EOF
 chmod a+x /etc/rc.local
@@ -36,9 +33,11 @@ cp files/optimicedisk.sh /sbin/optimicedisk.sh
 chmod a+x /sbin/optimicedisk.sh
 
 # network
-cat <<EOF > /sbin/eth0.sh
-/sbin/ethtool -K eth0 tso off
-EOF
+cp files/pre-eth0.sh /sbin/pre-eth0.sh
+chmod a+x /sbin/pre-eth0.sh
+
+# increase tcp congestion window
+cp files/eth0.sh /sbin/eth0.sh
 chmod a+x /sbin/eth0.sh
 
 # configure limits
