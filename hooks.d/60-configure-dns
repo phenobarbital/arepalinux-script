@@ -44,9 +44,18 @@ chown dnsmasq.dnsmasq /etc/dnsmasq.d -R
 cat <<EOF > /etc/resolv.dnsmasq
 domain $DOMAIN
 search $DOMAIN
-nameserver $GATEWAY
+# nameservers
 EOF
 chown dnsmasq.dnsmasq /etc/resolv.dnsmasq
+# fill resolv.dnsmasq
+cat /etc/resolv.conf | grep nameserver >> /etc/resolv.dnsmasq
+
+# generate a resolv.conf
+cat <<EOF > /etc/resolv.conf
+domain $DOMAIN
+search $DOMAIN
+nameserver 127.0.0.1
+EOF
 
 fi
 

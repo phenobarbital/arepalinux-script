@@ -22,14 +22,15 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=6
-FILE_NAME_0=2790;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Farepalinux.sh;0;4
-FILE_NAME_1=2137;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Flib%2Flibarepa.sh;0;4
-FILE_NAME_2=1267;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F11-install-software;0;4
-FILE_NAME_3=1595;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fetc%2Farepalinux.conf;0;4
-FILE_NAME_4=223;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F04-configure-sysctl;0;4
-FILE_NAME_5=1851;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F05-enable-modules;0;4
-FILE_NAME_6=3291;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F01-configure-apt;0;4
+current_page=4
+FILE_NAME_0=7508;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Farepalinux.sh;0;4
+FILE_NAME_1=3170;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Flib%2Flibarepa.sh;0;4
+FILE_NAME_2=0;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fetc%2Farepalinux.conf;0;4
+FILE_NAME_3=998;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F61-configure-network;0;4
+FILE_NAME_4=1344;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F60-configure-dns;0;4
+FILE_NAME_5=0;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F11-install-software;0;4
+FILE_NAME_6=0;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F20-firewall;0;4
+FILE_NAME_7=0;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F30-security;0;4
 
 [VTE]
 last_dir=/home/jesuslara

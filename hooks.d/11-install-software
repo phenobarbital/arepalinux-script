@@ -24,6 +24,7 @@ if [ "$MODE" == "server" ]; then
 install_package ntp
 hwclock --systohc
 service ntp restart
+fi
 
 # disable exim4
 aptitude -y purge exim4 exim4-daemon-light
@@ -37,6 +38,7 @@ sed -i -e "s/smtpd_banner.*$/smtpd_banner = $SERVERNAME ESMTP $DOMAIN/" /etc/pos
 fi
 
 if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
+
 # Prepare for Video Support
 info "Detecting Video Card information, please wait ..."
 
@@ -57,6 +59,7 @@ if [ -z "$videodriver" ]; then
 		videodriver="nouveau"
 	fi		
 fi
+
 case "$videodriver" in
 	"i915")
 		install_package xserver-xorg-video-intel

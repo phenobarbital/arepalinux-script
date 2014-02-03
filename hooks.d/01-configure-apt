@@ -51,26 +51,21 @@ EOF
 cat <<EOF > /etc/apt/preferences.d/$SUITE.pref
 Package: *
 Pin: release n=$SUITE
-Pin-Priority: 100
+Pin-Priority: 200
 
 Package: *
 Pin: release n=$SUITE-updates
 Pin-Priority: 999
 
-EOF
-
-if [ "$ENABLE_BACKPORTS" == "yes" ]; then
-cat <<EOF >> /etc/apt/preferences.d/$SUITE.pref
 Package: *
 Pin: release n=$SUITE-backports
-Pin-Priority: 999
+Pin-Priority: 100
+
 EOF
-fi
 
 cat <<EOF > /etc/apt/apt.conf.d/10-$DIST
 Acquire::PDiffs "false";
-APT::Default-Release "stable"
-// Acquire::Language "none";
+APT::Default-Release "stable";
 APT::Clean-Installed "true";
 APT::Get:AutomaticRemove "true";
 APT::Get::HideAutoRemove "false";
@@ -102,26 +97,4 @@ aptitude -y full-upgrade
 if [ -z $(which lsb_release) ]; then
 	echo "arepalinux warning: lsb-release is required"
 	$APT -y install lsb-release
-fi
-
-if [ -z $(which lshw) ]; then
-	echo "arepalinux warning: lshw is required"
-	$APT -y install lshw
-fi
-
-
-if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
-	if [ "$ENABLE_BACKPORTS" == "yes" ]; then
-	# upgrade kernel from backports
-		# install kernel kbuild for backports
-		aptitude -y -t $SUITE-backports install $(aptitude -t $SUITE-backports search -F "%p" -O version linux-kbuild | tail -n1)
-		aptitude -y -t $SUITE-backports install initramfs-tools
-		# latest RT_PREEMPT Kernel from backports:
-		aptitude -y -t $SUITE-backports --with-recommends install $(aptitude -t $SUITE-backports search -F "%p" -O version,name linux-image | grep -F "rt" | grep -Fv "dbg" | tail -n1) $(aptitude -t $SUITE-backports search -F "%p" -O version,name linux-headers | grep -F "rt" | grep -Fv "dbg" | tail -n1)
-		# install latest firmware
-		aptitude -y -t $SUITE-backports --without-recommends install firmware-linux-nonfree firmware-linux-free $(aptitude -t $SUITE-backports search firmware- | grep "^i " | awk '{ print $2}')
-	else
-		# upgrade to latest kernel
-		aptitude -y -t $SUITE --with-recommends install $(aptitude -t $SUITE search -F "%p" -O version linux-image | grep -Fv "\-dbg" | tail -n1) $(aptitude -t $SUITE search -F "%p" -O version linux-headers | grep -Fv "\-dbg" | tail -n1)
-	fi
 fi

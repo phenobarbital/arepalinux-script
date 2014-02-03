@@ -12,6 +12,10 @@ info " Create Network Configuration "
 if [ ! -f "/etc/network/interfaces.orig" ]; then
 	cp /etc/network/interfaces /etc/network/interfaces.orig
 fi
+# backup resolv.conf
+if [ ! -f "/etc/resolv.conf.orig" ]; then
+	cp /etc/resolv.conf /etc/resolv.conf.orig
+fi
 
 install_package bridge-utils iftop
 if [ -z $(which ovs-vsctl) ]; then
@@ -27,19 +31,6 @@ version=$(printf "3.5.0\n${kernel}\n" | sort -Vr | head -n1)
 	fi
 	install_package openvswitch-controller
 fi
-
-if [ "$DISABLE_DNSCACHE" == "yes" ]; then
-DNS="8.8.8.8"
-else
-DNS='127.0.0.1'
-fi
-
-# generate a resolv.conf
-cat <<EOF > /etc/resolv.conf
-domain $DOMAIN
-search $DOMAIN
-nameserver $DNS
-EOF
 
 # add loopback configuration
 cat <<EOF > /etc/network/interfaces

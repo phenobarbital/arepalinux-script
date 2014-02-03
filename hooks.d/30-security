@@ -38,31 +38,17 @@ if [ -z "`grep 'secure tmp' /etc/fstab`" ]; then
 cat <<EOF >> /etc/fstab
 # secure tmp
 tmpfs /tmp tmpfs nosuid,noexec,nodev,rw 0 0
-tmpfs /run tmpfs rw,nodev,noexec,relatime,size=188756k,mode=755 0 0
 EOF
 fi
 
-# Don't allow any nut to kill the server
-sed -i -e "s/ca:12345:ctrlaltdel:\(.*\)/#ca:12345:ctrlaltdel:\1" /etc/inittab
+# disable reboot with CTRL+ALT+DEL, Don't allow any nut to kill the server
+sed -i -e 's/ca:12345:ctrlaltdel:\(.*\)/#ca:12345:ctrlaltdel:\1/' /etc/inittab
 
-# install denyhosts
-install_package denyhosts
+# install molly-guard
+# secure poweroff and reboot with scripts
+install_package molly-guard
 
-sed -i -e 's/^PURGE_DENY.*$/PURGE_DENY = 72h/' /etc/denyhosts.conf
-sed -i -e "s/^ADMIN_EMAIL.*$/ADMIN_EMAIL = $MAIL/" /etc/denyhosts.conf
-sed -i -e 's/^#RESET_ON_SUCCESS.*$/RESET_ON_SUCCESS = yes/' /etc/denyhosts.conf
-sed -i -e 's/^#SYSLOG_REPORT=YES.*$/SYSLOG_REPORT=YES/' /etc/denyhosts.conf
-sed -i -e 's/^#SYNC_SERVER.*$/SYNC_SERVER = http:\/\/xmlrpc.denyhosts.net:9911/' /etc/denyhosts.conf
-
-service denyhosts restart
-
-# install psad
-install_package psad
-
-sed -i "s/^EMAIL_ADDRESSES.*$/EMAIL_ADDRESSES             $MAIL;/" /etc/psad/psad.conf
-sed -i "s/^HOSTNAME.*$/HOSTNAME             $NAME;/" /etc/psad/psad.conf
-sed -i 's/^ENABLE_IPV6_DETECTION.*$/ENABLE_IPV6_DETECTION             NO;/' /etc/psad/psad.conf
-sed -i 's/^FW_MSG_SEARCH.*$/FW_MSG_SEARCH               DROP;\nFW_MSG_SEARCH               Shorewall:net2all:DROP:;\nFW_MSG_SEARCH Shorewall:net2fw:DROP:;/' /etc/psad/psad.conf
+# TODO: monkeysphere openPGP SSH auth
 
 if [ "$DISABLE_INTEGRITY" != 'yes' ]; then
 
@@ -83,7 +69,44 @@ install_package tripwire
 info "Initialize tripwire database, press ENTER (no local key passphrase)"
 # initialize tripwire database
 tripwire -m i
+fi
 
+# install psad
+install_package psad
+
+sed -i "s/^EMAIL_ADDRESSES.*$/EMAIL_ADDRESSES             $MAIL;/" /etc/psad/psad.conf
+sed -i "s/^HOSTNAME.*$/HOSTNAME             $NAME;/" /etc/psad/psad.conf
+sed -i 's/^ENABLE_IPV6_DETECTION.*$/ENABLE_IPV6_DETECTION             NO;/' /etc/psad/psad.conf
+sed -i 's/^FW_MSG_SEARCH.*$/FW_MSG_SEARCH               DROP;\nFW_MSG_SEARCH               Shorewall:net2all:DROP:;\nFW_MSG_SEARCH Shorewall:net2fw:DROP:;/' /etc/psad/psad.conf
+
+
+# install fail2ban
+install_package fail2ban
+
+sed -i 's/^banaction.*$/banaction = shorewall/' /etc/fail2ban/jail.conf
+sed -i "s/^destemail.*$/destemail = $MAIL/" /etc/fail2ban/jail.conf
+sed -i 's/^bantime.*$/bantime = 1200/' /etc/fail2ban/jail.conf
+
+service fail2ban restart
+
+# install rootkit tools
+install_package chkrootkit rkhunter
+
+# install denyhosts
+install_package denyhosts
+
+sed -i -e 's/^PURGE_DENY.*$/PURGE_DENY = 72h/' /etc/denyhosts.conf
+sed -i -e "s/^ADMIN_EMAIL.*$/ADMIN_EMAIL = $MAIL/" /etc/denyhosts.conf
+sed -i -e 's/^#RESET_ON_SUCCESS.*$/RESET_ON_SUCCESS = yes/' /etc/denyhosts.conf
+sed -i -e 's/^#SYSLOG_REPORT=YES.*$/SYSLOG_REPORT=YES/' /etc/denyhosts.conf
+sed -i -e 's/^#SYNC_SERVER.*$/SYNC_SERVER = http:\/\/xmlrpc.denyhosts.net:9911/' /etc/denyhosts.conf
+
+service denyhosts restart
+
+if [ "$DISABLE_ANTIVIRUS" != 'yes' ]; then
+	info " Installing ClamAV Antivirus "
+	# install antivirus
+	install_package clamav clamav-daemon clamav-freshclam
 fi
 
 fi
@@ -121,21 +144,3 @@ readonly TMOUT=900
 export TMOUT
 EOF
 chmod +x /etc/profile.d/os-security.sh
-
-# install fail2ban
-install_package fail2ban
-
-sed -i 's/^banaction.*$/banaction = shorewall/' /etc/fail2ban/jail.conf
-sed -i "s/^destemail.*$/destemail = $MAIL/" /etc/fail2ban/jail.conf
-sed -i 's/^bantime.*$/bantime = 1200/' /etc/fail2ban/jail.conf
-
-service fail2ban restart
-
-# install rootkit tools
-install_package chkrootkit rkhunter
-
-if [ "$DISABLE_ANTIVIRUS" != 'yes' ]; then
-	info " Installing ClamAV Antivirus "
-	# install antivirus
-	install_package clamav clamav-daemon clamav-freshclam
-fi

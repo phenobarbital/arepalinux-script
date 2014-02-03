@@ -31,8 +31,7 @@ if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
 fi
 
 if [ -z "`grep 'PermitRootLogin no' /etc/ssh/sshd_config`" ]; then
-  ssh_port=$((RANDOM%65000+2000))
-  
+
   # change SSH port
   sed -i "s/Port.*$/Port $ssh_port/" /etc/ssh/sshd_config
   warning "SSH port configured to $ssh_port"
@@ -55,8 +54,8 @@ EOF
 cat <<EOF >>/etc/ssh/sshd_banner
 ************************************************
 
-Welcome to ArepaLinux $VERSION System
-$DIST GNU/Linux $SUITE
+Welcome to a $DIST GNU/Linux $SUITE
+ArepaLinux script $VERSION
 
 *************************************************
 EOF

@@ -258,6 +258,12 @@ NETWORK=$(get_network $GATEWAY $NETMASK)
 SUBNET=$(get_subnet $LAN_INTERFACE)
 BROADCAST=$(get_broadcast $LAN_INTERFACE)
 
+if [ "$SSH_PORT" == 'random' ]; then
+	ssh_port=$((RANDOM%9000+2000))
+else
+	ssh_port="$SSH_PORT"
+fi
+
 if [ ! -z "$STEP" ]; then
 	debug "Resuming Arepa Linux installation"
 	step=$(find $HOOKSDIR/* -maxdepth 1 -executable -type f -name "$STEP-*")

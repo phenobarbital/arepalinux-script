@@ -172,7 +172,7 @@ if [ "$DISABLE_IPV6" == 'yes' ]; then
 cat <<EOF >> /etc/sysctl.conf
 
 # Increase ephermeral IP ports
-net.ipv4.ip_local_port_range = 20000 65000
+net.ipv4.ip_local_port_range = 25000 65000
 
 EOF
 fi
@@ -194,8 +194,9 @@ EOF
 
 # enable cgroup on fstab
 cat <<EOF >> /etc/fstab
+
 # cgroups
 cgroup  /sys/fs/cgroup  cgroup  defaults  0   0
-EOF
 
+EOF
 fi
