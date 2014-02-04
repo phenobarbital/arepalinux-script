@@ -26,6 +26,7 @@ iptables -I FORWARD -m physdev --physdev-is-bridged -j ACCEPT
 iptables -P FORWARD ACCEPT
 EOF
 chmod a+x /sbin/compartir_internet
+fi
 
 # optimize disk settings
 install_package hdparm
