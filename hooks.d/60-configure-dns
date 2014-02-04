@@ -57,6 +57,5 @@ search $DOMAIN
 nameserver 127.0.0.1
 EOF
 
-fi
-
-fi
+fi # which dnsmasq
+fi # enable dns-cache
