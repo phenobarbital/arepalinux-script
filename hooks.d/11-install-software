@@ -35,7 +35,6 @@ if [ -z "`grep 'inet_protocols' /etc/postfix/main.cf`" ]; then
 	echo 'inet_protocols = ipv4' >> /etc/postfix/main.cf
 fi
 sed -i -e "s/smtpd_banner.*$/smtpd_banner = $SERVERNAME ESMTP $DOMAIN/" /etc/postfix/main.cf
-fi
 
 if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
 

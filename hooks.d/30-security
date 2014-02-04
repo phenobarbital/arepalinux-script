@@ -44,12 +44,6 @@ fi
 # disable reboot with CTRL+ALT+DEL, Don't allow any nut to kill the server
 sed -i -e 's/ca:12345:ctrlaltdel:\(.*\)/#ca:12345:ctrlaltdel:\1/' /etc/inittab
 
-# install molly-guard
-# secure poweroff and reboot with scripts
-install_package molly-guard
-
-# TODO: monkeysphere openPGP SSH auth
-
 if [ "$DISABLE_INTEGRITY" != 'yes' ]; then
 
 info " Install Integrity tools (aide, tripwire) "

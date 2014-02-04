@@ -259,9 +259,9 @@ SUBNET=$(get_subnet $LAN_INTERFACE)
 BROADCAST=$(get_broadcast $LAN_INTERFACE)
 
 if [ "$SSH_PORT" == 'random' ]; then
-	ssh_port=$((RANDOM%9000+2000))
+	SSH_PORT=$((RANDOM%9000+2000))
 else
-	ssh_port="$SSH_PORT"
+	SSH_PORT="$SSH_PORT"
 fi
 
 if [ ! -z "$STEP" ]; then
