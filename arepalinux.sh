@@ -74,10 +74,11 @@ check_name()
 
 check_domain()
 {
-	if [[ "${#1}" -gt 254 ]] || [[ "${#1}" -lt 2 ]]; then
+	dm="${#1}"
+	if [[ "$dm" -gt 254 ]] || [[ "$dm" -lt 2 ]]; then
 		usage_err "domain name '$1' is an invalid domain name"
 	fi
-	if [ -z echo "${#1}" | grep -P '(?=^.{5,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)' ]; then
+	if [ -z $(echo $dm | grep -P '(?=^.{5,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)') ]; then
 		usage_err "domain name '$1' is an invalid domain name"
 	fi
 }
