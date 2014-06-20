@@ -100,9 +100,3 @@ iface lan0 inet static
     bridge-stp off
     bridge-fd 1
 EOF
-
-# enable lan0 bridge
-ifup lan0
-
-# configure interface in openvswitch
-ovs-vsctl add-br lan0
