@@ -107,17 +107,6 @@ install_package bash-completion
 ## enable bash-completion
 sed -i '/#if ! shopt.*$/,+6s/#//' /etc/bash.bashrc
 
-#if [ -z "`grep 'enable bash-completion' /etc/profile`" ]; then
-#cat <<PROFILE_EOF >> /etc/profile
-
-## enable bash-completion
-#if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
-    #. /etc/bash_completion
-#fi
-
-#PROFILE_EOF
-#fi
-
 # configure bash.bashrc
 ## configure bashrc
 sed -i 's/^#force_color_prompt=.*$/force_color_prompt=yes/' /etc/skel/.bashrc
@@ -161,16 +150,14 @@ install_package xfsprogs btrfs-tools dosfstools ntfs-3g cifs-utils
 #
 # basic programming languages
 #
-if [[ "$MODE" = "workstation" || "$MODE" = "server" ]]; then
-	install_package ${prefix} perl-modules python-minimal python-pip python-setuptools ruby rubygems php5-cli
+install_package ${prefix} perl-modules python-minimal python-pip python-setuptools ruby rubygems php5-cli
 
-	# secure php5-cli
-	sed -i 's/^register_globals \= On/register_globals \= Off/' /etc/php5/cli/php.ini
-	echo 'register_globals = Off' >> /etc/php5/cli/php.ini
-	sed -i 's/^expose_php \= On/expose_php \= Off/' /etc/php5/cli/php.ini
-	sed -i 's/^allow_url_fopen \= On/allow_url_fopen \= Off/' /etc/php5/cli/php.ini
-	sed -i 's/^zlib.output_compression \= Off/zlib.output_compression \= On/' /etc/php5/cli/php.ini
-fi
+# secure php5-cli
+sed -i 's/^register_globals \= On/register_globals \= Off/' /etc/php5/cli/php.ini
+echo 'register_globals = Off' >> /etc/php5/cli/php.ini
+sed -i 's/^expose_php \= On/expose_php \= Off/' /etc/php5/cli/php.ini
+sed -i 's/^allow_url_fopen \= On/allow_url_fopen \= Off/' /etc/php5/cli/php.ini
+sed -i 's/^zlib.output_compression \= Off/zlib.output_compression \= On/' /etc/php5/cli/php.ini
 
 # install locate
 install_package locate

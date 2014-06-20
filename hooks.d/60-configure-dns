@@ -45,10 +45,9 @@ cat <<EOF > /etc/resolv.dnsmasq
 domain $DOMAIN
 search $DOMAIN
 # nameservers
+nameserver 8.8.8.8
 EOF
 chown dnsmasq.dnsmasq /etc/resolv.dnsmasq
-# fill resolv.dnsmasq
-cat /etc/resolv.conf | grep nameserver >> /etc/resolv.dnsmasq
 
 # generate a resolv.conf
 cat <<EOF > /etc/resolv.conf

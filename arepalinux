@@ -22,11 +22,13 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=3
-FILE_NAME_0=6421;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Farepalinux.sh;0;4
+current_page=5
+FILE_NAME_0=5329;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Farepalinux.sh;0;4
 FILE_NAME_1=0;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fetc%2Farepalinux.conf;0;4
 FILE_NAME_2=2726;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Flib%2Flibarepa.sh;0;4
 FILE_NAME_3=1472;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F60-configure-dns;0;4
+FILE_NAME_4=464;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F01-configure-apt;0;4
+FILE_NAME_5=1058;Sh;0;16;1;1;0;%2Fhome%2Fjesuslara%2Fproyectos%2Farepalinux-script%2Fhooks.d%2F20-firewall;0;4
 
 [VTE]
 last_dir=/home/jesuslara

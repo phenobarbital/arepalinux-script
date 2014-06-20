@@ -54,6 +54,9 @@ sed -i -e "/\/home/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
 awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" '/\/home/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
 cp -p /etc/fstab.bak /etc/fstab
 e2fsck -fDC0 $HOME
+else
+awk -v f="$XFS_FLAGS" '/\/home/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
+cp -p /etc/fstab.bak /etc/fstab
 fi
 fi
 

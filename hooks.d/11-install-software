@@ -9,22 +9,14 @@ info " Install basic software and utilities "
 
 $APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx ethtool less screen tree curl wget telnet iputils-ping dnsutils lsof
 
-if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
-	install_package laptop-detect
-	if [ "$(laptop-detect)" -eq 0 ]; then
-		# We're a laptop/Notebook
-		install_package laptop-mode-tools task-laptop xorg-driver-synaptics
-	fi
-	# install basic Xorg
-	install_package xserver-xorg-video-fbdev xserver-xorg-core xserver-xorg xorg xserver-xorg-input-kbd xserver-xorg-input-evdev xserver-xorg-input-mouse
+install_package laptop-detect
+if [ "$(laptop-detect)" -eq 0 ]; then
+	# We're a laptop/Notebook
+	install_package laptop-mode-tools task-laptop xorg-driver-synaptics
 fi
-
-if [ "$MODE" == "server" ]; then
-# configure NTP
-install_package ntp
-hwclock --systohc
-service ntp restart
-fi
+	
+# install basic Xorg
+install_package xserver-xorg-video-fbdev xserver-xorg-core xserver-xorg xorg xserver-xorg-input-kbd xserver-xorg-input-evdev xserver-xorg-input-mouse
 
 # disable exim4
 aptitude -y purge exim4 exim4-daemon-light

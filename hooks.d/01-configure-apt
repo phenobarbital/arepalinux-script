@@ -18,9 +18,17 @@ rm -f /etc/apt/sources.list.d/*.list
 
 # generate new repositories
 if [ "$REPO_TYPE" == "local" ]; then
-mirror="file://$REPO_URL/debian/"
+	mirror="file://$REPO_URL/debian/"
+	mirror_multimedia="file://$REPO_URL/multimedia/"
+	mirror_liquorix="file://$REPO_URL/liquorix/"
+	mirror_mint="file://$REPO_URL/mint/"	
+	mirror_mate="file://$REPO_URL/mate/"
 else
-mirror="http://$REPO_URL/debian/"
+	mirror="http://$REPO_URL/debian/"
+	mirror_multimedia="http://www.deb-multimedia.org"
+	mirror_liquorix="http://liquorix.net/debian/"
+	mirror_mint="http://packages.linuxmint.com/"
+	mirror_mate="http://packages.mate-desktop.org/repo/debian/"
 fi
 
 # oficial repositories
@@ -44,6 +52,17 @@ deb http://security.debian.org/ $SUITE/updates main
 E_O_APT
 fi
 
+if [ "$ENABLE_MULTIMEDIA" == "yes" ]; then
+cat <<E_O_APT > /etc/apt/sources.list.d/multimedia.list
+# multimedia
+deb $mirror_multimedia $SUITE main non-free
+
+# mate and mint
+deb $mirror_mate $SUITE main
+deb $mirror_mint debian main import backport upstream romeo
+E_O_APT
+fi
+
 cat <<EOF > /etc/apt/apt.conf.d/80-update
 Acquire::Check-Valid-Until "false";
 EOF
@@ -61,11 +80,15 @@ Package: *
 Pin: release n=$SUITE-backports
 Pin-Priority: 100
 
+Package: *
+Pin: release o=Unofficial Multimedia Packages
+Pin-Priority: 250
+
 EOF
 
 cat <<EOF > /etc/apt/apt.conf.d/10-$DIST
 Acquire::PDiffs "false";
-APT::Default-Release "stable";
+APT::Default-Release "$SUITE";
 APT::Clean-Installed "true";
 APT::Get:AutomaticRemove "true";
 APT::Get::HideAutoRemove "false";
@@ -87,7 +110,9 @@ $APT update
 # install keyring list
 debug "install Debian keyrings"
 $APT -y install $KEYRINGS
-	
+$APT -y install apt
+$APT update
+
 # update and upgrade system
 debug "upgrade system"
 $APT upgrade -y
@@ -98,3 +123,15 @@ if [ -z $(which lsb_release) ]; then
 	echo "arepalinux warning: lsb-release is required"
 	$APT -y install lsb-release
 fi
+
+# enable liquorix kernel
+if [ "$INSTALL_LIQUORIX" == "yes" ]; then
+cat <<E_O_APT > /etc/apt/sources.list.d/liquorix.list
+# updates
+deb $mirror_liquorix sid main
+E_O_APT
+fi
+$APT update
+
+# install liquorix kernel
+aptitude -y install linux-image-liquorix-amd64

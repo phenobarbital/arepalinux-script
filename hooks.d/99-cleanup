@@ -11,14 +11,14 @@ info " Cleanup System ... "
 install_package localepurge deborphan
 $APTITUDE -y purge $(deborphan --libdevel) $(deborphan --find-config)
 
+# remove obsolete packages
+$APTITUDE purge ~o
+
 #
 # clean apt cache
 $APT -y autoremove
 $APT -y clean
 $APTITUDE clean
-# protect dash and locales
-/bin/echo locales hold | /usr/bin/dpkg --set-selections
-/bin/echo dash hold | /usr/bin/dpkg --set-selections
 
 #  Remove disable-daemons script (if present)
 if [ -x "/usr/sbin/policy-rc.d" ]; then

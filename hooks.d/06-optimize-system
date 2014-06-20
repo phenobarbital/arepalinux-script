@@ -19,14 +19,12 @@ exit 0
 EOF
 chmod a+x /etc/rc.local
 
-if [ "$MODE" = "server" ]; then
 cat <<EOF > /sbin/compartir_internet
 #!/bin/bash
 iptables -I FORWARD -m physdev --physdev-is-bridged -j ACCEPT
 iptables -P FORWARD ACCEPT
 EOF
 chmod a+x /sbin/compartir_internet
-fi
 
 # optimize disk settings
 install_package hdparm

@@ -115,8 +115,8 @@ hooksdir()
 
 roledir()
 {
-		if [ -d "/usr/share/arepalinux/roles.d" ]; then
-			ROLEDIR="/usr/share/arepalinux/roles.d"
+		if [ -d "/usr/share/arepalinux/role.d" ]; then
+			ROLEDIR="/usr/share/arepalinux/role.d"
 		else
 			ROLEDIR="./roles.d"
 		fi
