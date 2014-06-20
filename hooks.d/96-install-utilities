@@ -11,7 +11,7 @@ info " Configure utilities "
 install_package vim
 
 ## configure vim
-cp files/vimrc.local /etc/vimrc/
+cp files/vimrc.local /etc/vim/
 
 # install and configure bash_completion
 install_package bash-completion
