@@ -233,24 +233,6 @@ hooksdir
 BOOTFS=$(cat /etc/fstab | grep boot | grep UUID | awk '{print $3}')
 ROOTFS=$(cat /etc/fstab | grep " / " | grep UUID | awk '{print $3}')
 
-# LAN auto-configure with DHCP
-LAN_IPADDR="$(ip addr show $LAN_INTERFACE | awk "/^.*inet.*$LAN_INTERFACE\$/{print \$2}" | sed -n '1 s,/.*,,p')"
-if [ -z "$LAN_INTERFACE" ]; then
-	error "LAN Interface its not defined"
-	exit 1
-fi
-if [ -z "$LAN_IPADDR" ]; then
-	error "LAN Interface $LAN_INTERFACE not configured, please assign a IP Address"
-	exit 1
-fi
-
-# network options
-GATEWAY=$(get_gateway)
-NETMASK=$(get_netmask $LAN_INTERFACE)
-NETWORK=$(get_network $GATEWAY $NETMASK)
-SUBNET=$(get_subnet $LAN_INTERFACE)
-BROADCAST=$(get_broadcast $LAN_INTERFACE)
-
 if [ "$SSH_PORT" == 'random' ]; then
 	SSH_PORT=$((RANDOM%9000+2000))
 else

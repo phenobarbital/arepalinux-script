@@ -136,11 +136,6 @@ SUMMARY=$(cat << _MSG
   Distribution : .................. $DIST
   Suite : ......................... $SUITE
   Domain : ........................ $DOMAIN
-  Interface : ..................... $LAN_INTERFACE
-  IP : ............................ $LAN_IPADDR
-  Gateway : ....................... $GATEWAY
-  Netmask : ....................... $NETMASK
-  Network : ....................... $NETWORK
   SSH Port : ...................... $SSH_PORT
  ---------------------------------------------------------------
 _MSG

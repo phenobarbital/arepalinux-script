@@ -20,8 +20,6 @@ fi
 install_package bridge-utils iftop
 if [ -z $(which ovs-vsctl) ]; then
 	install_package openvswitch-switch
-	service openvswitch-switch restart
-	
 kernel=$(uname -r)
 # only install if kernel < 3.5.0
 version=$(printf "3.5.0\n${kernel}\n" | sort -Vr | head -n1)
