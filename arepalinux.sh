@@ -67,18 +67,17 @@ get_role()
 
 check_name()
 {
-	if [[ "${#1}" -gt 20 ]] || [[ "${#1}" -lt 2 ]]; then
+	if [ ${#1} -gt 20 ] || [ ${#1} -lt 2 ]; then
 		usage_err "hostaname '$1' is an invalid name"
 	fi
 }
 
 check_domain()
 {
-	dm="${#1}"
-	if [[ "$dm" -gt 254 ]] || [[ "$dm" -lt 2 ]]; then
+	if [ ${#1} -gt 254 -o ${#1} -lt 2 ]; then
 		usage_err "domain name '$1' is an invalid domain name"
-	fi
-	if [ -z $(echo $dm | grep -P '(?=^.{5,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)') ]; then
+	fi	
+	if [ -z $(echo "$@" | grep -P '(?=^.{1,254}$)(^(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$)') ]; then
 		usage_err "domain name '$1' is an invalid domain name"
 	fi
 }
