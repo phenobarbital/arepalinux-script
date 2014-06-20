@@ -24,6 +24,8 @@ ECHO="$(which echo)"
 SYSCTL="$(which sysctl)"
 APT="$(which apt-get)"
 APTITUDE="$(which aptitude)"
+ROLE=""
+
 #
 
 # get configuration
@@ -45,10 +47,6 @@ fi
 # get template
 get_role() 
 {
-	if [ -z "$ROLENAME" ]; then
-	    error "$(basename $0) role definition is missing, aborted"
-		exit 1
-	fi
 	roledir
 	if [ -f "$ROLEDIR/$ROLENAME" ]; then
 			#verifico esta permisologia
@@ -270,10 +268,12 @@ show_summary
 	
 	# executing a role
 	if [ ! -z "$ROLENAME" ]; then
-		get_role
-		. $ROLE
-		run
-		if [ "$?" -ne "0" ]; then
+		if [ $? -eq 0 ]; then
+			get_role
+			. $ROLE
+			run
+		fi
+		if [ $? -ne 0 ]; then
 			error "failed to execute role $ROLENAME"
 		fi
 	fi

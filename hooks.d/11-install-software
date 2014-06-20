@@ -10,7 +10,7 @@ info " Install basic software and utilities "
 $APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx ethtool less screen tree curl wget telnet iputils-ping dnsutils lsof
 
 install_package laptop-detect
-if [ "$(laptop-detect)" -eq 0 ]; then
+if [ $(laptop-detect) -eq 0 ]; then
 	# We're a laptop/Notebook
 	install_package laptop-mode-tools task-laptop xorg-driver-synaptics
 fi
@@ -20,6 +20,7 @@ install_package xserver-xorg-video-fbdev xserver-xorg-core xserver-xorg xorg xse
 
 # disable exim4
 aptitude -y purge exim4 exim4-daemon-light
+
 # configure postfix for local system
 install_package postfix
 

@@ -63,6 +63,14 @@ deb $mirror_mint debian main import backport upstream romeo
 E_O_APT
 fi
 
+# enable liquorix kernel
+if [ "$INSTALL_LIQUORIX" == "yes" ]; then
+cat <<E_O_APT > /etc/apt/sources.list.d/liquorix.list
+# updates
+deb $mirror_liquorix sid main
+E_O_APT
+fi
+
 cat <<EOF > /etc/apt/apt.conf.d/80-update
 Acquire::Check-Valid-Until "false";
 EOF
@@ -124,13 +132,6 @@ if [ -z $(which lsb_release) ]; then
 	$APT -y install lsb-release
 fi
 
-# enable liquorix kernel
-if [ "$INSTALL_LIQUORIX" == "yes" ]; then
-cat <<E_O_APT > /etc/apt/sources.list.d/liquorix.list
-# updates
-deb $mirror_liquorix sid main
-E_O_APT
-fi
 $APT update
 
 # install liquorix kernel
