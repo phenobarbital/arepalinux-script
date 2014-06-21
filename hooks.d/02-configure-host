@@ -29,7 +29,11 @@ sed -i -e '/ *#/d; /^ *$/d' /etc/hosts
 # modificar /etc/hosts para incorporar resolucion de nombre de equipo
 echo " " >> /etc/hosts
 echo "# Host IP Address" >> /etc/hosts
-echo "$LAN_IPADDR $SERVERNAME $NAME" >> /etc/hosts
+if [ -z "$LAN_IPADDR" ]; then
+	echo "127.0.1.1 $SERVERNAME $NAME" >> /etc/hosts
+else
+	echo "$LAN_IPADDR $SERVERNAME $NAME" >> /etc/hosts
+fi
 
 # configure hostname
 echo $NAME > /etc/hostname

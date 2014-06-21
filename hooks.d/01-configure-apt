@@ -103,12 +103,6 @@ APT::Get::HideAutoRemove "false";
 APT::Get:Show-Upgraded "true";
 EOF
 
-if [ "$APT_RECOMMENDS" == "yes" ]; then
-cat <<EOF > /etc/apt/apt.conf.d/90-recommends
-APT::Install-Recommends "true";
-EOF
-fi
-
 #
 #  Now that the sources have been setup make sure the system is up to date.
 #
@@ -117,8 +111,8 @@ $APT update
 
 # install keyring list
 debug "install Debian keyrings"
-$APT -y install $KEYRINGS
-$APT -y install apt
+$APT -y --force-yes install $KEYRINGS
+$APT -y --force-yes install apt
 $APT update
 
 # update and upgrade system
@@ -134,5 +128,7 @@ fi
 
 $APT update
 
+if [ "$INSTALL_LIQUORIX" == "yes" ]; then
 # install liquorix kernel
 aptitude -y install linux-image-liquorix-amd64
+fi
