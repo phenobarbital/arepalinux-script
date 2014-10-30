@@ -66,7 +66,7 @@ nmap <leader>w :w!<cr>
 command W w !sudo tee % > /dev/null
 
 " Enable mouse usage (all modes)
-set mouse=a
+set mouse=r
 
 " show line numbers
 set number

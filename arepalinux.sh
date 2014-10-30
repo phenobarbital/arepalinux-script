@@ -256,14 +256,20 @@ debug "= Arepa Linux Installation Summary = "
 show_summary
 
 	# TODO, ¿pedir confirmación para proceder luego del sumario?
-	if [ "$VERBOSE" == 'true' ]; then
+	if [ "$DEBUG" == 'true' ]; then
 		read -p "Continue with installation (y/n)?" WORK
 		if [ "$WORK" != "y" ]; then
 			exit 0
 		fi
 	fi
 	for f in $(find $HOOKSDIR/* -maxdepth 1 -executable -type f ! -iname "*.md" ! -iname ".*" | sort --numeric-sort); do
-		. $f
+	    if [ "$DEBUG" == 'true' ]; then
+		    read -p "Continue with $f (y/n)?" WORK
+		        if [ "$WORK" != "y" ]; then
+			        exit 0
+		        fi
+		    fi
+			. $f
 	done
 	
 	# executing a role

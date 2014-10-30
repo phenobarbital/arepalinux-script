@@ -13,7 +13,7 @@ install_package laptop-detect
 laptop-detect
 if [ $? -eq 0 ]; then
 	# We're a laptop/Notebook
-	install_package laptop-mode-tools task-laptop xorg-driver-synaptics
+	install_package task-laptop xorg-driver-synaptics
 fi
 	
 # install basic Xorg
@@ -52,6 +52,8 @@ if [ -z "$videodriver" ]; then
 		videodriver="nouveau"
 	fi		
 fi
+
+debug "installing video driver for $videodriver"
 
 case "$videodriver" in
 	"i915")

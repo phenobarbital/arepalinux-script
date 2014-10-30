@@ -19,16 +19,8 @@ rm -f /etc/apt/sources.list.d/*.list
 # generate new repositories
 if [ "$REPO_TYPE" == "local" ]; then
 	mirror="file://$REPO_URL/debian/"
-	mirror_multimedia="file://$REPO_URL/multimedia/"
-	mirror_liquorix="file://$REPO_URL/liquorix/"
-	mirror_mint="file://$REPO_URL/mint/"	
-	mirror_mate="file://$REPO_URL/mate/"
 else
 	mirror="http://$REPO_URL/debian/"
-	mirror_multimedia="http://www.deb-multimedia.org"
-	mirror_liquorix="http://liquorix.net/debian/"
-	mirror_mint="http://packages.linuxmint.com/"
-	mirror_mate="http://packages.mate-desktop.org/repo/debian/"
 fi
 
 # oficial repositories
@@ -52,55 +44,31 @@ deb http://security.debian.org/ $SUITE/updates main
 E_O_APT
 fi
 
-if [ "$ENABLE_MULTIMEDIA" == "yes" ]; then
-cat <<E_O_APT > /etc/apt/sources.list.d/multimedia.list
-# multimedia
-deb $mirror_multimedia $SUITE main non-free
-
-# mate and mint
-deb $mirror_mate $SUITE main
-deb $mirror_mint debian main import backport upstream romeo
-E_O_APT
-fi
-
-# enable liquorix kernel
-if [ "$INSTALL_LIQUORIX" == "yes" ]; then
-cat <<E_O_APT > /etc/apt/sources.list.d/liquorix.list
-# updates
-deb $mirror_liquorix sid main
-E_O_APT
-fi
-
 cat <<EOF > /etc/apt/apt.conf.d/80-update
 Acquire::Check-Valid-Until "false";
+EOF
+
+cat <<EOF > /etc/apt/apt.conf.d/10-Debian
+Acquire::Language "none";
+Acquire::PDiffs  "false";
+APT::Install-Recommends  "false";
+APT::Get::AutomaticRemove  "true";
+APT::Clean-Installed  "true";
 EOF
 
 cat <<EOF > /etc/apt/preferences.d/$SUITE.pref
 Package: *
 Pin: release n=$SUITE
-Pin-Priority: 200
-
-Package: *
-Pin: release n=$SUITE-updates
-Pin-Priority: 999
+Pin-Priority: 300
 
 Package: *
 Pin: release n=$SUITE-backports
-Pin-Priority: 100
+Pin-Priority: 250
 
 Package: *
 Pin: release o=Unofficial Multimedia Packages
 Pin-Priority: 250
 
-EOF
-
-cat <<EOF > /etc/apt/apt.conf.d/10-$DIST
-Acquire::PDiffs "false";
-APT::Default-Release "$SUITE";
-APT::Clean-Installed "true";
-APT::Get:AutomaticRemove "true";
-APT::Get::HideAutoRemove "false";
-APT::Get:Show-Upgraded "true";
 EOF
 
 #
@@ -110,13 +78,18 @@ debug "updating APT database"
 $APT update
 
 # install keyring list
-debug "install Debian keyrings"
-$APT -y --force-yes install $KEYRINGS
+debug "Install Debian keyrings"
+aptitude -y -t wheezy install $KEYRINGS
+
+# upgrade system
+debug "upgrade system"
 $APT -y --force-yes install apt
-$APT update
+$APT upgrade
+
+# install tools
+install_package initramfs-tools firmware-linux firmware-linux-free
 
 # update and upgrade system
-debug "upgrade system"
 $APT upgrade -y
 aptitude -y full-upgrade
 
@@ -124,11 +97,4 @@ aptitude -y full-upgrade
 if [ -z $(which lsb_release) ]; then
 	echo "arepalinux warning: lsb-release is required"
 	$APT -y install lsb-release
-fi
-
-$APT update
-
-if [ "$INSTALL_LIQUORIX" == "yes" ]; then
-# install liquorix kernel
-aptitude -y install linux-image-liquorix-amd64
 fi

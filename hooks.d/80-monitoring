@@ -32,4 +32,4 @@ service snmpd restart
 install_package smartmontools lm-sensors
 
 # other monitoring tools
-install_package htop
+install_package htop iftop

@@ -301,6 +301,6 @@ mask2cidr() {
 }
 
 get_subnet() {
-	MASK=`get_netmask`
+	MASK=`get_netmask $1`
 	echo $(mask2cidr $MASK)
 }

@@ -31,60 +31,14 @@ version=$(printf "3.5.0\n${kernel}\n" | sort -Vr | head -n1)
 	install_package openvswitch-controller
 fi
 
-# add loopback configuration
-cat <<EOF > /etc/network/interfaces
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-
-# The loopback network interface
-auto lo
-iface lo inet loopback
-EOF
-
 # get interfaces
-interfaces=$(cat /proc/net/dev | grep -v "lo:" | grep ":" | awk '{print $1}' | sed s/://)
-firstiface=$(cat /proc/net/dev | grep -v "lo:" | grep ":" | awk '{print $1}' | sed s/:// | head -n1)
-
-if [ "$USE_DHCP" == "yes" ]; then
-	# auto-configuration
-cat <<EOF >> /etc/network/interfaces
-# The lan interface
-auto $firstiface
-iface $firstiface inet dhcp
-    pre-up /sbin/pre-eth0.sh
-    up /sbin/eth0.sh
-EOF
-
-else
-	# network options
-	ipaddr=$(get_ip $firstiface)
-	netmask=$(get_netmask $firstiface)
-	network=$(get_network $GATEWAY $netmask)
-	broadcast=$(get_broadcast $firstiface)
-cat <<EOF >> /etc/network/interfaces
-# The lan interface
-auto $firstiface
-iface $firstiface inet static
-    address $ipaddr
-    network $network
-    netmask $netmask
-    broadcast  $broadcast
-    gateway $GATEWAY
-    # dns-nameservers
-    dns-domain $DOMAIN
-    dns-search $DOMAIN
-    dns-nameservers $DNS
-    pre-up /sbin/pre-eth0.sh
-    up /sbin/eth0.sh
-EOF
-	
-fi
-
+#interfaces=$(cat /proc/net/dev | grep -v "lo:" | grep ":" | awk '{print $1}' | sed s/://)
+#firstiface=$(cat /proc/net/dev | grep -v "lo:" | grep ":" | awk '{print $1}' | sed s/:// | head -n1)
 
 # add bridge internal configuration
 cat <<EOF >> /etc/network/interfaces
 
-# The internal lan interface
+# The internal bridge interface
 auto lan0
 iface lan0 inet static
     address 172.16.30.1
@@ -94,7 +48,7 @@ iface lan0 inet static
     dns-nameservers 127.0.0.1
     # bridge info
     bridge-ports none
-	bridge_bridgeprio 1
+    bridge_bridgeprio 1
     bridge-ageing 100
     bridge-maxwait 1
     bridge-stp off
