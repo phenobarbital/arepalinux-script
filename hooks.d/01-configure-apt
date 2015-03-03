@@ -75,7 +75,7 @@ EOF
 #  Now that the sources have been setup make sure the system is up to date.
 #
 debug "updating APT database"
-$APT update
+$APT -y update
 
 # install keyring list
 debug "Install Debian keyrings"
@@ -84,10 +84,10 @@ aptitude -y -t wheezy install $KEYRINGS
 # upgrade system
 debug "upgrade system"
 $APT -y --force-yes install apt
-$APT upgrade
+$APT -y upgrade
 
 # install tools
-install_package initramfs-tools firmware-linux firmware-linux-free
+$APT -y --force-yes initramfs-tools firmware-linux firmware-linux-free
 
 # update and upgrade system
 $APT upgrade -y
