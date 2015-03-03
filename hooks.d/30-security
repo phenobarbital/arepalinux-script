@@ -1,0 +1,154 @@
+#!/bin/bash
+# 30-security
+#
+#  Ensure all security software (fail2ban, psad, rkhunter) is installed and configured
+#  in this system
+#
+
+info " Secure System "
+
+# set expiration date for common user
+chage -M 365 $ACCOUNT
+chage -M 768 root
+
+# remover suid bit a "su"
+chmod -s /bin/su
+
+# y a passwd
+chmod -s /usr/bin/passwd
+chmod -s /usr/bin/wall
+
+# asegurar archivos basicos:
+chmod 0754 /etc/profile /etc/login.defs /etc/init.d/rc
+
+echo 'root' > /etc/ftpusers
+echo 'nobody' >> /etc/ftpusers
+
+# change default UMASK
+sed -i -e 's/^UMASK.*$/UMASK          027/' /etc/login.defs
+sed -i -e 's/^umask.*$/umask 027/' /etc/init.d/rc
+
+# disable firewire module
+echo "blacklist firewire-ohci" > /etc/modprobe.d/blacklist-firewire.conf
+
+# secure tmp
+if [ -z "`grep 'secure tmp' /etc/fstab`" ]; then
+cat <<EOF >> /etc/fstab
+# secure tmp
+tmpfs /tmp tmpfs nosuid,nodev,rw 0 0
+EOF
+fi
+
+# disable reboot with CTRL+ALT+DEL, Don't allow any nut to kill the server
+sed -i -e 's/ca:12345:ctrlaltdel:\(.*\)/#ca:12345:ctrlaltdel:\1/' /etc/inittab
+
+# install locate
+install_package locate
+
+warning "update locate database, please wait ..."
+updatedb
+
+#### security tools
+
+
+# install fail2ban
+install_package fail2ban
+
+sed -i 's/^banaction.*$/banaction = shorewall/' /etc/fail2ban/jail.conf
+sed -i "s/^destemail.*$/destemail = $MAIL/" /etc/fail2ban/jail.conf
+sed -i 's/^bantime.*$/bantime = 1200/' /etc/fail2ban/jail.conf
+
+service fail2ban restart
+
+# install denyhosts
+install_package denyhosts
+
+sed -i -e 's/^PURGE_DENY.*$/PURGE_DENY = 72h/' /etc/denyhosts.conf
+sed -i -e "s/^ADMIN_EMAIL.*$/ADMIN_EMAIL = $MAIL/" /etc/denyhosts.conf
+sed -i -e 's/^#RESET_ON_SUCCESS.*$/RESET_ON_SUCCESS = yes/' /etc/denyhosts.conf
+sed -i -e 's/^#SYSLOG_REPORT=YES.*$/SYSLOG_REPORT=YES/' /etc/denyhosts.conf
+sed -i -e 's/^#SYNC_SERVER.*$/SYNC_SERVER = http:\/\/xmlrpc.denyhosts.net:9911/' /etc/denyhosts.conf
+
+service denyhosts restart
+
+#### install rootkit tools
+install_package chkrootkit rkhunter
+
+# TODO: actualizar el rootkit hunter
+rkhunter --update && rkhunter --propupd
+
+cat <<EOF > /etc/cron.weekly/rkhunter.sh
+#!/bin/sh
+(
+/usr/bin/rkhunter --versioncheck
+/usr/bin/rkhunter --update
+/usr/bin/rkhunter --propupd
+/usr/bin/rkhunter --cronjob --report-warnings-only
+) | /bin/mail -s 'rkhunter Weekly Run ($SERVERNAME)' $MAIL
+EOF
+chmod +x /etc/cron.weekly/rkhunter.sh
+
+##### Antivirus
+
+info " Installing ClamAV Antivirus "
+# install antivirus
+install_package clamav clamav-daemon clamav-freshclam
+
+##### port scanners
+
+# install psad
+install_package psad
+
+sed -i "s/^EMAIL_ADDRESSES.*$/EMAIL_ADDRESSES             $MAIL;/" /etc/psad/psad.conf
+sed -i "s/^HOSTNAME.*$/HOSTNAME             $NAME;/" /etc/psad/psad.conf
+sed -i 's/^ENABLE_IPV6_DETECTION.*$/ENABLE_IPV6_DETECTION             NO;/' /etc/psad/psad.conf
+sed -i 's/^FW_MSG_SEARCH.*$/FW_MSG_SEARCH               DROP;\nFW_MSG_SEARCH               Shorewall:net2all:DROP:;\nFW_MSG_SEARCH Shorewall:net2fw:DROP:;/' /etc/psad/psad.conf
+
+service psad restart
+
+# actualizar semanalmente las reglas del psad
+cat <<EOF > /etc/cron.weekly/psad.sh
+#!/bin/bash
+# update psad
+psad --sig-update
+# reload psad
+psad -H
+EOF
+chmod +x /etc/cron.weekly/psad.sh
+
+if [ -z "`grep -F 'Legal information:' /etc/motd`" ]; then
+cat files/issue >> /etc/motd
+#echo "legal information:" >> /etc/motd
+#echo "This is a private system, all unauthorized access is prohibited" >> /etc/motd 
+fi
+
+if [ -z "`grep -F 'Legal information:' /etc/issue.net`" ]; then
+cat files/issue >> /etc/issue.net
+#echo "legal information:" >> /etc/issue.net
+#echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue.net
+fi
+
+if [ -z "`grep -F 'legal information:' /etc/issue`" ]; then
+echo "Hostname:  \n tty: \l " >> /etc/issue
+cat files/issue >> /etc/issue
+#echo "legal information:" >> /etc/issue
+#echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue
+fi
+
+# Passwords expire every 180 days
+perl -npe 's/PASS_MAX_DAYS\s+99999/PASS_MAX_DAYS 180/' -i /etc/login.defs
+
+# Passwords may only be changed once a day
+perl -npe 's/PASS_MIN_DAYS\s+0/PASS_MIN_DAYS 1/g' -i /etc/login.defs
+
+# Login retries change to 6
+perl -npe 's/LOGIN_RETRIES\s+5/LOGIN_RETRIES 6/g' -i /etc/login.defs
+
+# kick off idle users:
+message "Idle users will be removed after 15 minutes"
+cat <<EOF > /etc/profile.d/os-security.sh
+# set a 15 min timeout policy for bash shell
+readonly TMOUT=900
+export TMOUT
+EOF
+chmod +x /etc/profile.d/os-security.sh

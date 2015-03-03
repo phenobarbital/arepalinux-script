@@ -24,6 +24,8 @@ sed -i 's/^#port.*$/port=53/' /etc/dnsmasq.conf
 sed -i 's/^#domain-needed/domain-needed/' /etc/dnsmasq.conf
 sed -i 's/^#bogus-priv/bogus-priv/' /etc/dnsmasq.conf
 sed -i 's/^#resolv-file=.*$/resolv-file=\/etc\/resolv.dnsmasq/' /etc/dnsmasq.conf
+sed -i 's/^#bogus-priv/bogus-priv/' /etc/dnsmasq.conf
+sed -i 's/^#resolv-file=.*$/resolv-file=\/etc\/resolv.dnsmasq/' /etc/dnsmasq.conf
 
 # configure user and group
 sed -i 's/^#user=.*$/user=dnsmasq/' /etc/dnsmasq.conf

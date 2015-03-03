@@ -71,8 +71,22 @@ sed -i 's/^expose_php \= On/expose_php \= Off/' /etc/php5/cli/php.ini
 sed -i 's/^allow_url_fopen \= On/allow_url_fopen \= Off/' /etc/php5/cli/php.ini
 sed -i 's/^zlib.output_compression \= Off/zlib.output_compression \= On/' /etc/php5/cli/php.ini
 
-# install locate
-install_package locate
-
-warning "update locate database, please wait ..."
-updatedb
+##########################################
+#
+# bash prompt features
+#
+if [ -z "`grep '^PS1=' /etc/bash.bashrc`" ]; then
+cat <<EOF >> /etc/bash.bashrc
+# bash color prompt
+if [ "$force_color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '                                                       
+fi
+unset color_prompt force_color_prompt
+EOF
+fi
+if [ -z "`grep '^PS1=' /root/.bashrc`" ]; then
+# color prompt for root
+echo "PS1='${debian_chroot:+($debian_chroot)}\[\033[01;31m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '" >> /root/.bashrc
+fi
