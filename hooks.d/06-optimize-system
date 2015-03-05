@@ -59,3 +59,7 @@ if [ -z "`grep 'ulimit -S' /etc/profile`" ]; then
 	echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
 	echo "*	hard 		core 		0" >> /etc/security/limits.conf
 fi
+
+# copy new udev rules for ssd files
+cp files/66-ssd.rules /etc/udev/rules.d/
+cp files/51-android.rules /etc/udev/rules.d/
