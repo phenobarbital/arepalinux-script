@@ -41,14 +41,14 @@ if [ -z "`grep 'PermitRootLogin no' /etc/ssh/sshd_config`" ]; then
 
 # Habilitar el acceso del grupo sudo
 cat <<EOF >>/etc/ssh/sshd_config
-AllowGroups sudo
+AllowGroups sudo $ACCOUNT
 EOF
 
-  # fix permissions
-  chmod 440 /etc/sudoers
+# fix permissions
+chmod 440 /etc/sudoers
 
-  # add user to sudo group
-  /usr/sbin/adduser $ACCOUNT sudo
+# add user to sudo group
+/usr/sbin/adduser $ACCOUNT sudo
 
 # Configurar el banner SSH
 cat <<EOF >>/etc/ssh/sshd_banner

@@ -159,6 +159,7 @@ kernel.threads-max = 126015
 
 # kernel
 kernel.core_uses_pid = 1
+# Disables the magic SysRq key
 kernel.sysrq = 0
 kernel.kptr_restrict = 1
 
@@ -193,10 +194,14 @@ kernel.sched_wakeup_granularity_ns = 100000
 EOF
 
 # enable cgroup on fstab
+CHANGES=$(grep "^cgroup" /etc/fstab | tail)
+if [ -z "$CHANGES" ]; then
 cat <<EOF >> /etc/fstab
 
 # cgroups
 cgroup  /sys/fs/cgroup  cgroup  defaults  0   0
 
 EOF
+fi
+# end sysctl config
 fi

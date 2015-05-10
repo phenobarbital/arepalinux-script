@@ -92,7 +92,7 @@ chmod +x /etc/cron.weekly/rkhunter.sh
 
 info " Installing ClamAV Antivirus "
 # install antivirus
-install_package clamav clamav-daemon clamav-freshclam
+install_package clamav clamav-daemon clamav-freshclam libnet-dns-perl
 
 ##### port scanners
 
@@ -118,20 +118,20 @@ chmod +x /etc/cron.weekly/psad.sh
 
 if [ -z "`grep -F 'Legal information:' /etc/motd`" ]; then
 cat files/issue >> /etc/motd
-#echo "legal information:" >> /etc/motd
+#echo "Legal Information:" >> /etc/motd
 #echo "This is a private system, all unauthorized access is prohibited" >> /etc/motd 
 fi
 
 if [ -z "`grep -F 'Legal information:' /etc/issue.net`" ]; then
 cat files/issue >> /etc/issue.net
-#echo "legal information:" >> /etc/issue.net
+#echo "Legal Information:" >> /etc/issue.net
 #echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue.net
 fi
 
 if [ -z "`grep -F 'legal information:' /etc/issue`" ]; then
 echo "Hostname:  \n tty: \l " >> /etc/issue
 cat files/issue >> /etc/issue
-#echo "legal information:" >> /etc/issue
+#echo "Legal Information:" >> /etc/issue
 #echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue
 fi
 
@@ -152,3 +152,7 @@ readonly TMOUT=900
 export TMOUT
 EOF
 chmod +x /etc/profile.d/os-security.sh
+
+# TODO enabling cracklib for passwords
+install_package libpam-cracklib
+# password requisite pam_cracklib.so try_first_pass retry=3 minlength=8 lcredit=1 ucredit=1 dcredit=1 ocredit=1 difok=4
