@@ -24,7 +24,7 @@ EOF
 # update apt database
 $APT -y update
 
-if [ -z "`dpkg -l | grep -i 'sysvinit-core'`" ]; then
+if [ ! -z "`dpkg -l | grep -i 'systemd-sysv'`" ]; then
 
   # install the SysV init packages
   $APT -y install sysvinit-core sysvinit sysvinit-utils

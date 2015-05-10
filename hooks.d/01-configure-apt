@@ -120,10 +120,10 @@ fi
 #  Now that the sources have been setup make sure the system is up to date.
 #
 # install keyring list ####
-debug "Install Debian keyrings"
+debug "Installing Debian Keyrings"
 $APT -y install $KEYRINGS
 
-debug "updating APT database"
+debug "Updating APT database"
 $APT -y update
 
 if [ "$ENABLE_DEVUAN" == "yes" ]; then
