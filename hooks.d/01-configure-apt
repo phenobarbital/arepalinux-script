@@ -29,10 +29,36 @@ cat <<E_O_APT > /etc/apt/sources.list.d/$SUITE.list
 deb $mirror $SUITE $REPO_SECTIONS
 E_O_APT
 
+# devuan repositories
+if [ "$ENABLE_DEVUAN" == "yes" ]; then
+cat <<E_O_APT > /etc/apt/sources.list.d/devuan.list
+# Devuan
+deb http://packages.devuan.org/devuan/ $SUITE $REPO_SECTIONS
+E_O_APT
+fi
+
 # backport repositories
+if [ "$ENABLE_BACKPORTS" == "yes" ]; then
 cat <<E_O_APT > /etc/apt/sources.list.d/backports.list
 deb $mirror $SUITE-backports $REPO_SECTIONS
 E_O_APT
+cat <<E_O_APT > /etc/apt/sources.list.d/devuan.list
+# Devuan Backports
+deb http://packages.devuan.org/devuan/ $SUITE-backports main
+E_O_APT
+fi
+
+if [ "$ENABLE_REMOTE" == "yes" ]; then
+# security and update repositories
+cat <<E_O_APT > /etc/apt/sources.list.d/remote.list
+# oficial
+deb http://http.debian.net/debian/ $SUITE-updates main contrib non-free
+# updates
+deb http://http.debian.net/debian/ $SUITE-updates main
+# security
+deb http://security.debian.org/ $SUITE/updates main
+E_O_APT
+fi
 
 if [ "$APT_SECURITY" == "yes" ]; then
 # security and update repositories
@@ -65,17 +91,34 @@ Package: *
 Pin: release n=$SUITE-backports
 Pin-Priority: 250
 
-Package: *
-Pin: release o=Unofficial Multimedia Packages
-Pin-Priority: 250
-
 EOF
+
+if [ "$ENABLE_DEVUAN" == "yes" ]; then
+cat <<EOF > /etc/apt/preferences.d/devuan.pref
+Package: *
+Pin: release o=Devuan
+Pin-Priority: 700
+
+Package: *
+Pin: origin packages.devuan.org
+Pin-Priority: 700
+
+Package: *
+Pin: release o=Debian
+Pin-Priority: 500
+EOF
+fi
 
 #
 #  Now that the sources have been setup make sure the system is up to date.
 #
 debug "updating APT database"
 $APT -y update
+
+if [ "$ENABLE_DEVUAN" == "yes" ]; then
+	$APT -y install devuan-keyring
+	$APT -y update
+fi
 
 # install keyring list
 debug "Install Debian keyrings"

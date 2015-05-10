@@ -1,0 +1,40 @@
+#!/bin/bash
+# 20-sysvinit
+#
+# This script remove systemd and install sysvinit
+#
+
+# first, disable systemd from apt
+cat <<EOF > /etc/apt/preferences.d/systemd.pref
+Package: systemd-sysv
+Pin: release o=Debian
+Pin-Priority: -1
+
+Package: systemd
+Pin: origin ""
+Pin-Priority: -1
+
+Package: *systemd*
+Pin: origin ""
+Pin-Priority: -1
+EOF
+
+# update apt database
+$APT -y update
+
+# install the SysV init packages
+$APT -y install sysvinit-core sysvinit sysvinit-utils
+
+# remove systemd
+$APT remove --purge --auto-remove systemd
+
+WARN=$(cat << _MSG
+ ---------- [ Removing systemd ] ---------------
+
+  we are removing systemd-* from this system, 
+  please restart for apply changes.
+
+ ------------------------------------------------
+_MSG
+)
+echo "$WARN"

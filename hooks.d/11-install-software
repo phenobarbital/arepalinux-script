@@ -7,7 +7,7 @@
 
 info " Install basic software and utilities "
 
-$APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx ethtool less screen tree curl wget telnet iputils-ping dnsutils lsof
+$APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx ethtool less screen tree curl wget telnet iputils-ping dnsutils lsof patch
 
 install_package laptop-detect
 laptop-detect
