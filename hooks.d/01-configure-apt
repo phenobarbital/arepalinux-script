@@ -62,9 +62,15 @@ fi
 
 if [ "$APT_SECURITY" == "yes" ]; then
 # security and update repositories
-cat <<E_O_APT > /etc/apt/sources.list.d/security.list
+cat <<E_O_APT > /etc/apt/sources.list.d/updates.list
 # updates
 deb $mirror $SUITE-updates main
+E_O_APT
+fi
+
+if [ "$APT_SECURITY" == "yes" ]; then
+# security and update repositories
+cat <<E_O_APT > /etc/apt/sources.list.d/security.list
 # security
 deb http://security.debian.org/ $SUITE/updates main
 E_O_APT
