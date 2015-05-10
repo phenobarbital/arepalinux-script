@@ -4,6 +4,8 @@
 # configure sysctl
 #
 
+info " Configuring Sysctl and limits "
+
 if [ "$ENABLE_FORWARDING" == 'yes' ]; then
 	CHANGES=$(grep "^net.ipv4.ip_forward" /etc/sysctl.conf | tail)
 	if [ -z "$CHANGES" ]; then

@@ -4,6 +4,8 @@
 # This script remove systemd and install sysvinit
 #
 
+info " Removing Systemd utilities "
+
 # first, disable systemd from apt
 cat <<EOF > /etc/apt/preferences.d/systemd.pref
 Package: systemd-sysv

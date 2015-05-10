@@ -4,6 +4,8 @@
 # This script upgrade system to stable release
 #
 
+info " Upgrading and Updating System "
+
 # install tools
 $APT -y --force-yes initramfs-tools firmware-linux firmware-linux-free util-linux-locales
 
