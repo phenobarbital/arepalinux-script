@@ -24,7 +24,7 @@ EOF
 # update apt database
 $APT -y update
 
-if [ ! -z "`dpkg -l | grep -i 'sysvinit-core'`" ]; then
+if [ -z "`dpkg -l | grep -i 'sysvinit-core'`" ]; then
 
   # install the SysV init packages
   $APT -y install sysvinit-core sysvinit sysvinit-utils
@@ -49,9 +49,7 @@ echo "$WARN"
 
 reboot
 
-fi
-
-if [ ! -z "`dpkg -l | grep -i 'sysvinit-core'`" ]; then
+else
 # remove systemd
   $APT remove --purge --auto-remove systemd systemd-sysv
   
