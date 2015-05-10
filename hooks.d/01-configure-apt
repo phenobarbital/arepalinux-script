@@ -127,12 +127,13 @@ debug "updating APT database"
 $APT -y update
 
 if [ "$ENABLE_DEVUAN" == "yes" ]; then
+	debug "Install Devuan keyring"
 	$APT -y --force-yes install devuan-keyring
 	$APT -y update
 fi
 
 # upgrade system
-debug "upgrade system"
+debug "Upgrading System"
 $APT -y --force-yes install apt
 $APT -y upgrade
-$APT -y --force-yes install aptitude dbus libdbus
+$APT -y --force-yes install aptitude
