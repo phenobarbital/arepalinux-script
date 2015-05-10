@@ -1,5 +1,5 @@
 #!/bin/bash
-# 20-sysvinit
+# 02-sysvinit
 #
 # This script remove systemd and install sysvinit
 #
@@ -22,19 +22,34 @@ EOF
 # update apt database
 $APT -y update
 
-# install the SysV init packages
-$APT -y install sysvinit-core sysvinit sysvinit-utils
+if [ ! -z "`dpkg -l | grep -i 'sysvinit-core'`" ]; then
 
-# remove systemd
-$APT remove --purge --auto-remove systemd
+  # install the SysV init packages
+  $APT -y install sysvinit-core sysvinit sysvinit-utils
+
+  # start with sysvinit
+  $SED -i -e "s/GRUB_CMDLINE_LINUX=\"\"/GRUB_CMDLINE_LINUX=\"init=\/sbin\/init\"/" /etc/default/grub
+
+  update-grub2
 
 WARN=$(cat << _MSG
  ---------- [ Removing systemd ] ---------------
 
   we are removing systemd-* from this system, 
-  please restart for apply changes.
+  we need to restart for apply changes.
 
+  restart installation when complete.
+  
  ------------------------------------------------
 _MSG
 )
 echo "$WARN"
+
+fi
+
+if [ ! -z "`dpkg -l | grep -i 'sysvinit-core'`" ]; then
+# remove systemd
+  $APT remove --purge --auto-remove systemd systemd-sysv
+fi
+
+debug "Systemd has been removed!"

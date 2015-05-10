@@ -232,6 +232,14 @@ install_package()
 	DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --option Dpkg::Options::="--force-overwrite" --option Dpkg::Options::="--force-confold" --yes --force-yes install "$@"
 }
 
+is_installed()
+{
+	pkg="$@"
+	if [ -z "$pkg" ]; then
+		echo `dpkg -l | grep -i $pkg | awk '{ print $2}'}`
+	fi
+	return 0
+}
 ### network functions
 
 ifdev() {
