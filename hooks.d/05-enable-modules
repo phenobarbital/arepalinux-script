@@ -68,4 +68,7 @@ done
 
 # AMD and Intel especific options
 #TODO
-
+if [ "$cpumodel" == "GenuineIntel" ]; then
+    # install intel microcode
+    install_package intel-microcode
+fi
