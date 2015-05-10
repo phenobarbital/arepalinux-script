@@ -7,10 +7,10 @@
 info " Upgrading and Updating System "
 
 # install tools
-$APT -y --force-yes initramfs-tools firmware-linux firmware-linux-free util-linux-locales
+$APT -y --force-yes install initramfs-tools firmware-linux firmware-linux-free util-linux-locales
 
 # update and upgrade system
-$APT upgrade
+$APT upgrade -y
 aptitude -y full-upgrade
 
 # install test

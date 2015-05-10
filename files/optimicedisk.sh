@@ -24,10 +24,10 @@ do
         /bin/echo "8192" > /sys/block/$DISK/queue/read_ahead_kb
         /bin/echo "4096" > /sys/block/$DISK/queue/max_sectors_kb
         if [ "$SCHEDULER" == 'deadline' ]; then
-			# fifo batch reduce seeks
-			/bin/echo 32 > /sys/block/$DISK/queue/iosched/fifo_batch
-		fi
-        # enable write-caching, readahead and disable noise-reduction (performance boost)
-        /sbin/hdparm -a512 -A1 -W1 -M251 /dev/$DISK
+                # fifo batch reduce seeks
+                /bin/echo 32 > /sys/block/$DISK/queue/iosched/fifo_batch
+	fi
+        # enable write-caching and readahead (performance boost)
+        /sbin/hdparm -a512 -A1 -W1 /dev/$DISK
 done
 echo "done."

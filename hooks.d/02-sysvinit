@@ -49,7 +49,9 @@ echo "$WARN"
 
 reboot
 
-else
+fi
+
+if [ ! -z "`dpkg -l | grep -i 'systemd-sysv'`" ]; then
 # remove systemd
   $APT remove --purge --auto-remove systemd systemd-sysv
   

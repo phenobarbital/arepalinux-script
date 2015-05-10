@@ -4,7 +4,7 @@
 #  This script ensures that required kernel modules will be started
 #
 
-info "Enable specific Kernel Modules and drivers"
+info "Enabling specific Kernel Modules and drivers"
 
 install_package linux-headers-$(uname -r)
 

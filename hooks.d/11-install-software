@@ -5,9 +5,9 @@
 # Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
 # términos de la Licencia Pública General de GNU (versión 3).
 
-info " Install basic software and utilities "
+info " Installing basic software and utilities "
 
-$APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx ethtool less screen tree curl wget telnet iputils-ping dnsutils lsof patch
+$APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx ethtool less screen tree curl wget telnet iputils-ping dnsutils lsof patch irqbalance acpi-support acpi-fakekey
 
 install_package laptop-detect
 laptop-detect
