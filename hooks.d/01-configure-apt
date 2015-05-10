@@ -52,7 +52,7 @@ if [ "$ENABLE_REMOTE" == "yes" ]; then
 # security and update repositories
 cat <<E_O_APT > /etc/apt/sources.list.d/remote.list
 # oficial
-deb http://http.debian.net/debian/ $SUITE-updates main contrib non-free
+deb http://http.debian.net/debian/ $SUITE main contrib non-free
 # updates
 deb http://http.debian.net/debian/ $SUITE-updates main
 E_O_APT
@@ -129,12 +129,13 @@ fi
 
 # install keyring list
 debug "Install Debian keyrings"
-aptitude -y -t wheezy install $KEYRINGS
+$APT -y install $KEYRINGS
 
 # upgrade system
 debug "upgrade system"
 $APT -y --force-yes install apt
 $APT -y upgrade
+$APT -y --force-yes install aptitude
 
 # install tools
 $APT -y --force-yes initramfs-tools firmware-linux firmware-linux-free
