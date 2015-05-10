@@ -55,12 +55,10 @@ cat <<E_O_APT > /etc/apt/sources.list.d/remote.list
 deb http://http.debian.net/debian/ $SUITE-updates main contrib non-free
 # updates
 deb http://http.debian.net/debian/ $SUITE-updates main
-# security
-deb http://security.debian.org/ $SUITE/updates main
 E_O_APT
 fi
 
-if [ "$APT_SECURITY" == "yes" ]; then
+if [ "$APT_UPDATES" == "yes" ]; then
 # security and update repositories
 cat <<E_O_APT > /etc/apt/sources.list.d/updates.list
 # updates
@@ -90,13 +88,16 @@ EOF
 
 cat <<EOF > /etc/apt/preferences.d/$SUITE.pref
 Package: *
+Pin: origin ""
+Pin-Priority: 1001
+    
+Package: *
 Pin: release n=$SUITE
 Pin-Priority: 300
 
 Package: *
 Pin: release n=$SUITE-backports
 Pin-Priority: 250
-
 EOF
 
 if [ "$ENABLE_DEVUAN" == "yes" ]; then
