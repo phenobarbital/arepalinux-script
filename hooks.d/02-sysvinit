@@ -47,11 +47,13 @@ _MSG
 )
 echo "$WARN"
 
+reboot
+
 fi
 
 if [ ! -z "`dpkg -l | grep -i 'sysvinit-core'`" ]; then
 # remove systemd
   $APT remove --purge --auto-remove systemd systemd-sysv
+  
+  debug "Systemd has been removed!"
 fi
-
-debug "Systemd has been removed!"

@@ -42,7 +42,7 @@ if [ "$ENABLE_BACKPORTS" == "yes" ]; then
 cat <<E_O_APT > /etc/apt/sources.list.d/backports.list
 deb $mirror $SUITE-backports $REPO_SECTIONS
 E_O_APT
-cat <<E_O_APT > /etc/apt/sources.list.d/devuan.list
+cat <<E_O_APT >> /etc/apt/sources.list.d/devuan.list
 # Devuan Backports
 deb http://packages.devuan.org/devuan/ $SUITE-backports main
 E_O_APT
