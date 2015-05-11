@@ -12,7 +12,7 @@ install_package linux-headers-$(uname -r)
 cpumodel=$(lscpu | grep Vendor | head -n1 | cut -d ':' -f2 | tr -d ' ')
 case "$cpumodel" in
     "GenuineIntel")
-        install_package intel-microcode;;
+        install_package intel-microcode iucode-tool;;
     "AuthenticAMD")
         install_package amd64-microcode;;
     *)

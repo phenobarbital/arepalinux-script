@@ -19,28 +19,41 @@ fi
 
 install_package bridge-utils iftop
 if [ -z $(which ovs-vsctl) ]; then
-	install_package openvswitch-switch
-kernel=$(uname -r)
-# only install if kernel < 3.5.0
-version=$(printf "3.5.0\n${kernel}\n" | sort -Vr | head -n1)
-	if [ "$version" != "$kernel" ]; then
-		# configure openvswitch module (TODO: kernel < 3.5)
-		install_package openvswitch-datapath-dkms
-		service openvswitch-switch restart
-	fi
-	install_package openvswitch-controller
+    install_package openvswitch-switch
+    kernel=$(uname -r)
+    # only install if kernel < 3.5.0 (using coreutils sort -V)
+    version=$(printf "3.5.0\n${kernel}\n" | sort -Vr | head -n1)
+    if [ "$version" != "$kernel" ]; then
+	# configure openvswitch module (TODO: kernel < 3.5)
+	install_package openvswitch-datapath-dkms
+	service openvswitch-switch restart
+    fi
+install_package openvswitch-controller
 fi
+# restart openvswitch
+service openvswitch-switch restart
 
 # get interfaces
-#interfaces=$(cat /proc/net/dev | grep -v "lo:" | grep ":" | awk '{print $1}' | sed s/://)
-#firstiface=$(cat /proc/net/dev | grep -v "lo:" | grep ":" | awk '{print $1}' | sed s/:// | head -n1)
+interfaces=$(ip addr | grep mtu | awk '{print $2}'| cut -d ':' -f1)
+firstiface=$(ip addr | grep mtu | awk '{print $2}'| grep -v "lo:" | cut -d ':' -f1 | head -n1)
 
 # add bridge internal configuration
-cat <<EOF >> /etc/network/interfaces
+cat <<EOF > /etc/network/interfaces
 
-# The internal bridge interface
-auto lan0
-iface lan0 inet static
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+#### 
+### Internal Bridge for containers
+########
+auto loc0
+iface loc0 inet static
     address 172.16.30.1
     network 172.16.30.0
     netmask 255.255.255.0
@@ -51,6 +64,67 @@ iface lan0 inet static
     bridge_bridgeprio 1
     bridge-ageing 100
     bridge-maxwait 1
+    bridge-stp on
+    bridge-fd 1
+
+#######
+EOF
+# first bridge (lan bridge)
+if [ -n "$firstiface" ]; then
+
+netmask=$(get_netmask $firstiface)
+ip=$(get_ip $firstiface)
+network=$(get_network $ip $netmask)
+
+if [ "$USE_DHCP" == "yes" ]; then
+lanbridge=$(cat << _MSG
+iface lan0 inet dhcp
+_MSG
+)
+else
+lanbridge=$(cat << _MSG
+iface lan0 inet static
+    address $ip
+    network $network
+    netmask $netmask
+_MSG
+)
+fi
+
+cat <<EOF >> /etc/network/interfaces
+
+auto $firstiface
+allow-hotplug $firstiface
+iface $firstiface inet manual
+
+auto lan0
+$lanbridge
+    dns-nameservers 127.0.0.1
+    # bridge info
+    bridge-ports $firstiface
+    bridge_bridgeprio 1
+    bridge-ageing 100
+    bridge-maxwait 1
     bridge-stp off
     bridge-fd 1
+    # net
+    pre-up /sbin/pre-$firstiface.sh
+    up /sbin/$firstiface.sh    
 EOF
+
+cat <<EOF > /sbin/pre-$firstiface.sh
+#!/bin/bash
+/sbin/ethtool -K $firstiface tso off gro off gso on
+/sbin/ifconfig $firstiface txqueuelen 5000
+EOF
+
+cat <<EOF > /sbin/$firstiface.sh
+#!/bin/bash
+defrt=`ip route | grep "^default" | head -1`
+ip route change $defrt initcwnd 10
+EOF
+
+chmod 0700 /sbin/pre-$firstiface.sh
+chmod 0700 /sbin/$firstiface.sh
+
+fi

@@ -14,7 +14,8 @@ install_package shorewall
 sed -i -e "s/startup=0/startup=1/" /etc/default/shorewall
 
 # first enabled interface
-firstiface=$(ip addr show | grep "UP," | grep "MULTICAST" | awk '{ print $2}' | cut -d':' -f1)
+interfaces=$(ip addr | grep mtu | awk '{print $2}'| cut -d ':' -f1)
+firstiface=$(ip addr | grep mtu | awk '{print $2}'| grep -v "lo:" | cut -d ':' -f1 | head -n1)
 netmask=$(get_netmask $firstiface)
 ip=$(get_ip $firstiface)
 network=$(get_network $ip $netmask)
@@ -27,12 +28,13 @@ cat > /etc/shorewall/interfaces << EOF
 # Shorewall interfaces
 FORMAT 2
 #ZONE   INTERFACE   OPTIONS
-loc     lan0             routefilter,tcpflags,bridge,nosmurfs,logmartians,sourceroute=0
--     $firstiface        routefilter,tcpflags,nosmurfs,sourceroute=0
+## LAN Zone
+lan     lan0            routefilter,routeback,tcpflags,bridge,nosmurfs,logmartians,sourceroute=0
+## DMZ Zone
+loc     loc0            routefilter,routeback,bridge,logmartians,sourceroute=0
 EOF
 # loc es un bridge, conectado a los LXC containers
-# net es la interfaz que nos conecta a Internet (ej: bridge de la eth0)
-# lan es la red interna de la interfaz que nos conecta a Internet
+# lan es la red interna de la interfaz que nos conecta a Internet (ej: eth0)
 
 cat > /etc/shorewall/zones << EOF
 ############################################################################
@@ -40,25 +42,15 @@ cat > /etc/shorewall/zones << EOF
 #ZONE   TYPE    OPTIONS         IN          OUT
 #                   OPTIONS         OPTIONS
 fw  firewall
-net ipv4
 lan ipv4
 loc ipv4
 EOF
-
-cat > /etc/shorewall/hosts << EOF
-############################################################################
-# Shorewall Hosts
-#ZONE	IFACE:SUBNET
-lan	$firstiface:$subnet
-net	$firstiface:0.0.0.0/0
-EOF
-
 
 cat > /etc/shorewall/masq << EOF
 ############################################################################
 # Shorewall Masq
 #INTERFACE    SUBNET
-$firstiface       172.16.30.0/24
+lan0          172.16.30.0/24
 EOF
 # Esto permite que la red LAN salga a Internet de manera directa y enmascarada (Forward masquerading)
 
@@ -66,14 +58,11 @@ cat > /etc/shorewall/policy << EOF
 ############################################################################
 # shorewall policies
 #SOURCE     DEST        POLICY      LOG LEVEL   LIMIT:BURST
-fw      lan     ACCEPT
-fw     net     ACCEPT
+fw     lan     ACCEPT
+fw     loc     ACCEPT
 # acceso desde lan
 lan     fw      ACCEPT
-lan     net     ACCEPT
-# acceso desde internet
-net     fw      DROP
-net     lan     DROP
+lan     loc     ACCEPT
 # The FOLLOWING POLICY MUST BE LAST
 all     all     DROP      info
 EOF
@@ -84,18 +73,62 @@ cat > /etc/shorewall/rules << EOF
 #ACTION     SOURCE  DEST    PROTO   DEST   SOURCE  ORIGINAL RATE   USER/  MARK
 #                                   PORT   PORT(S) DEST     LIMIT  GROUP
 #
-# Accept Ping and Traceroute from the internet
-ACCEPT:info net     fw     icmp       8
 # Accept NTP udp
-ACCEPT    net     fw    udp     123
-# Acceso SSH
-ACCEPT      all     fw     tcp        $sshport    -    -   2/min:3
-# Aceptar PING
-Ping(ACCEPT)     net     all
+ACCEPT    all     fw    udp     123
+# SSH Access
+ACCEPT    all     fw    tcp     $sshport    -    -   2/min:3
+
+# Accept PING
+Ping(ACCEPT)     all     fw
+Ping(ACCEPT)     all     lan
+Ping(ACCEPT)     all     loc
+EOF
+
+cat > /etc/shorewall/routestopped  << EOF
+#                                                                                      
+# Shorewall version 4 - Routestopped File
+#
+# For information about entries in this file, type "man shorewall-routestopped"
+#
+# The manpage is also online at
+# http://www.shorewall.net/manpages/shorewall-routestopped.html
+#
+# See http://shorewall.net/starting_and_stopping_shorewall.htm for additional
+# information.
+#
+###############################################################################
+#INTERFACE  HOST(S)         OPTIONS     PROTO   DEST    SOURCE
+#                               PORT(S) PORT(S)
+### allow lan subnet
+lan0       $subnet
+### allow loc dmz
+loc0        -               routeback
+
+EOF
+
+cat > /etc/shorewall/start  << EOF
+#
+# Shorewall version 4 - Start File
+#
+# /etc/shorewall/start
+#
+#   Add commands below that you want to be executed after shorewall has
+#   been started or restarted.
+#
+# See http://shorewall.net/shorewall_extension_scripts.htm for additional
+# information.
+#
+###############################################################################
+run_iptables -A POSTROUTING -t mangle -p udp --dport bootpc -j CHECKSUM --checksum-fill
+run_iptables -I FORWARD -m physdev --physdev-is-bridged -j ACCEPT
+return 0 
+
 EOF
 
 # - deshabilitar ipv6
-sed -i "s/^DISABLE_IPV6=.*$/DISABLE_IPV6=Yes/" /etc/shorewall/shorewall.conf
+if [ "$DISABLE_IPV6" == 'yes' ]; then
+    sed -i "s/^DISABLE_IPV6=.*$/DISABLE_IPV6=Yes/" /etc/shorewall/shorewall.conf
+fi
 
 # - integrate with fail2ban
 sed -i "s/^BLACKLISTNEWONLY=.*$/BLACKLISTNEWONLY=No/" /etc/shorewall/shorewall.conf

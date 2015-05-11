@@ -56,6 +56,8 @@ cat <<EOF > /etc/resolv.conf
 domain $DOMAIN
 search $DOMAIN
 nameserver 127.0.0.1
+# fallback DNS
+nameserver 8.8.8.8
 EOF
 
 fi # which dnsmasq

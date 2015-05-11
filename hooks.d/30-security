@@ -94,6 +94,9 @@ info " Installing ClamAV Antivirus "
 # install antivirus
 install_package clamav clamav-daemon clamav-freshclam libnet-dns-perl
 
+# update antivirus
+freshclam --config-file=/etc/clamav/freshclam.conf --verbose
+
 ##### port scanners
 
 # install psad
@@ -153,6 +156,6 @@ export TMOUT
 EOF
 chmod +x /etc/profile.d/os-security.sh
 
-# TODO enabling cracklib for passwords
+# TODO enabling cracklib for passwords and pam_tally pam_tally2.so deny=3
 install_package libpam-cracklib
 # password requisite pam_cracklib.so try_first_pass retry=3 minlength=8 lcredit=1 ucredit=1 dcredit=1 ocredit=1 difok=4

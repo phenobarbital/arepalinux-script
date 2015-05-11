@@ -7,7 +7,7 @@
 
 info " Installing basic software and utilities "
 
-$APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx ethtool less screen tree curl wget telnet iputils-ping dnsutils lsof patch irqbalance acpi-support acpi-fakekey lvm2
+$APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx less screen tree curl wget telnet iputils-ping dnsutils lsof patch irqbalance acpi-support acpi-fakekey lvm2 powermgmt-base
 
 # disable exim4
 aptitude -y purge exim4 exim4-daemon-light
