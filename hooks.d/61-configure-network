@@ -28,7 +28,6 @@ if [ -z $(which ovs-vsctl) ]; then
 	install_package openvswitch-datapath-dkms
 	service openvswitch-switch restart
     fi
-install_package openvswitch-controller
 fi
 # restart openvswitch
 service openvswitch-switch restart
@@ -65,7 +64,6 @@ iface loc0 inet static
     bridge-ageing 100
     bridge-maxwait 1
     bridge-stp on
-    bridge-fd 1
 
 #######
 EOF
@@ -106,7 +104,6 @@ $lanbridge
     bridge-ageing 100
     bridge-maxwait 1
     bridge-stp off
-    bridge-fd 1
     # net
     pre-up /sbin/pre-$firstiface.sh
     up /sbin/$firstiface.sh    
@@ -114,14 +111,14 @@ EOF
 
 cat <<EOF > /sbin/pre-$firstiface.sh
 #!/bin/bash
-/sbin/ethtool -K $firstiface tso off gro off gso on
+/sbin/ethtool -K $firstiface tso off gro off
 /sbin/ifconfig $firstiface txqueuelen 5000
 EOF
 
 cat <<EOF > /sbin/$firstiface.sh
 #!/bin/bash
-defrt=`ip route | grep "^default" | head -1`
-ip route change $defrt initcwnd 10
+defrt=\`ip route | grep "^default" | head -1\`
+ip route change \$defrt initcwnd 10
 EOF
 
 chmod 0700 /sbin/pre-$firstiface.sh

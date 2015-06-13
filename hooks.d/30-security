@@ -60,17 +60,6 @@ sed -i 's/^bantime.*$/bantime = 1200/' /etc/fail2ban/jail.conf
 
 service fail2ban restart
 
-# install denyhosts
-install_package denyhosts
-
-sed -i -e 's/^PURGE_DENY.*$/PURGE_DENY = 72h/' /etc/denyhosts.conf
-sed -i -e "s/^ADMIN_EMAIL.*$/ADMIN_EMAIL = $MAIL/" /etc/denyhosts.conf
-sed -i -e 's/^#RESET_ON_SUCCESS.*$/RESET_ON_SUCCESS = yes/' /etc/denyhosts.conf
-sed -i -e 's/^#SYSLOG_REPORT=YES.*$/SYSLOG_REPORT=YES/' /etc/denyhosts.conf
-sed -i -e 's/^#SYNC_SERVER.*$/SYNC_SERVER = http:\/\/xmlrpc.denyhosts.net:9911/' /etc/denyhosts.conf
-
-service denyhosts restart
-
 #### install rootkit tools
 install_package chkrootkit rkhunter
 

@@ -54,6 +54,9 @@ fi
 if [ ! -z "`dpkg -l | grep -i 'systemd-sysv'`" ]; then
 # remove systemd
   $APT remove --purge --auto-remove systemd systemd-sysv
-  
+  #remove libsystemd0
+  version=$(apt-cache policy bsdutils | grep devuan1 | tail -n1 | awk '{ print $2}')
+  $APT -y install bsdutils=$version
+  $APT remove --purge --auto-remove libsystemd0
   debug "Systemd has been removed!"
 fi

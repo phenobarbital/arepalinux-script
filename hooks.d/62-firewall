@@ -26,7 +26,7 @@ subnet="$network/$octet"
 cat > /etc/shorewall/interfaces << EOF
 ############################################################################
 # Shorewall interfaces
-FORMAT 2
+?FORMAT 2
 #ZONE   INTERFACE   OPTIONS
 ## LAN Zone
 lan     lan0            routefilter,routeback,tcpflags,bridge,nosmurfs,logmartians,sourceroute=0

@@ -153,11 +153,10 @@ sshport=$(cat /etc/ssh/sshd_config | grep Port | cut -d ' ' -f2)
 SUMMARY=$(cat << _MSG
  ---------- [ Status of Installation ] ---------------
 
-  Mode : .......................... $MODE  
+  Mode : .......................... Server
   Name : .......................... $NAME
   ServerName : .................... $SERVERNAME
   SSH Port : ...................... $sshport
-  IP : ............................ $LAN_IPADDR
    
  ---------------------------------------------------------------
 _MSG

@@ -21,15 +21,14 @@ L=$( echo "$CLANG"_"$COUNTRY"."$ENCODING")
 # en_US:en
 L2=$( echo "$CLANG"_"$COUNTRY":"$CLANG")
 
-export LANG=$L
-export LANGUAGE=$L2
-
-/usr/sbin/update-locale LANG=$CLANG LANGUAGE=$L2
-
 # generate locale file
-cat <<EOF > /etc/locale.gen
+cat <<EOF >> /etc/locale.gen
 $L $ENCODING
 EOF
 
 # regenerate locales
 /usr/sbin/locale-gen
+
+export LANG=$L
+export LANGUAGE=$L2
+/usr/sbin/update-locale LANG=$CLANG LANGUAGE=$L2
