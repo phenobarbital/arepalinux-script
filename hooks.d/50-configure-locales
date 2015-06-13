@@ -31,4 +31,4 @@ EOF
 
 export LANG=$L
 export LANGUAGE=$L2
-/usr/sbin/update-locale LANG=$CLANG LANGUAGE=$L2
+#/usr/sbin/update-locale LANG=$CLANG LANGUAGE=$L2
