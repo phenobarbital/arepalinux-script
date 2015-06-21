@@ -5,6 +5,13 @@
 #  in this system
 #
 
+info " Installing TCP wrappers "
+install_package tcpd
+
+if [ -z "`grep -F 'sshd: ALL' /etc/hosts.allow`" ]; then
+  echo 'sshd: ALL' >> /etc/hosts.allow
+fi
+
 info " Secure System "
 
 # set expiration date for common user
