@@ -53,6 +53,9 @@ nameserver 127.0.0.1
 # fallback DNS
 nameserver 8.8.8.8
 EOF
+# securing resolv.conf
+chattr +i /etc/resolv.conf
+# TODO: configurar resolvconf
 
 # enable config dir
 cat <<EOF >> /etc/dnsmasq.conf

@@ -59,7 +59,7 @@ fi
 #re-install bsdutils (devuan version)
 version=$(apt-cache policy bsdutils | grep devuan1 | tail -n1 | awk '{ print $2}')
 $APT -y install bsdutils=$version
-$APT remove --purge --auto-remove libsystemd0
+$APT remove --purge --auto-remove -y libsystemd0
 
 
 debug "Systemd was removed from this system!"

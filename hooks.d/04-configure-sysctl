@@ -107,9 +107,6 @@ net.ipv4.tcp_keepalive_probes = 5
 net.ipv4.tcp_keepalive_intvl = 15
 
 
-# Increase number of incoming connections
-net.core.somaxconn = 65536
-
 # Increase number of incoming connections backlog
 net.core.netdev_max_backlog = 65536
 
@@ -131,6 +128,9 @@ net.netfilter.nf_conntrack_tcp_timeout_syn_sent = 15
 net.netfilter.nf_conntrack_udp_timeout = 10
 net.netfilter.nf_conntrack_udp_timeout_stream = 10
 net.netfilter.nf_conntrack_max = 2621440
+
+# Increase number of incoming connections
+net.core.somaxconn = 32768
 
 # VM
 vm.dirty_bytes = 67108864
@@ -190,6 +190,14 @@ kernel.sched_rt_runtime_us = 950000
 kernel.sched_latency_ns = 5000000
 kernel.sched_min_granularity_ns = 100000
 kernel.sched_wakeup_granularity_ns = 100000
+
+# For Lynis Compliance
+net.ipv4.conf.default.log_martians = 1
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
 
 EOF
 
