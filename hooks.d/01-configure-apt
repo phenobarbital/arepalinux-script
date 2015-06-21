@@ -52,10 +52,16 @@ if [ "$ENABLE_REMOTE" == "yes" ]; then
 # security and update repositories
 cat <<E_O_APT > /etc/apt/sources.list.d/remote.list
 # oficial
-deb http://http.debian.net/debian/ $SUITE main contrib non-free
+deb http://$REMOTE_REPO/debian/ $SUITE main contrib non-free
 # updates
-deb http://http.debian.net/debian/ $SUITE-updates main
+deb http://$REMOTE_REPO/debian/ $SUITE-updates main
 E_O_APT
+# lowest priority to remote repository
+cat <<EOF > /etc/apt/preferences.d/remote.pref
+Package: *
+Pin: origin $REMOTE_REPO
+Pin-Priority: 100
+EOF
 fi
 
 if [ "$APT_UPDATES" == "yes" ]; then
