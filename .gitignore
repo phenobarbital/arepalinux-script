@@ -1,4 +1,4 @@
 .project
 .pydevproject
 .settings
-.geany
+*.geany

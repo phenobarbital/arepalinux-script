@@ -12,7 +12,10 @@ if [ -z "`grep -F 'sshd: ALL' /etc/hosts.allow`" ]; then
   echo 'sshd: ALL' >> /etc/hosts.allow
 fi
 
-info " Secure System "
+info " Securing System "
+
+# installing ca-certificates
+install_package ssl-cert ca-certificates
 
 # set expiration date for common user
 chage -M 365 $ACCOUNT
@@ -52,7 +55,7 @@ sed -i -e 's/ca:12345:ctrlaltdel:\(.*\)/#ca:12345:ctrlaltdel:\1/' /etc/inittab
 # install locate
 install_package locate
 
-warning "update locate database, please wait ..."
+warning "updating LOCATE database, please wait ..."
 updatedb
 
 #### security tools
