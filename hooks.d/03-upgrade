@@ -1,0 +1,20 @@
+#!/bin/bash
+# 03-upgrade
+#
+# This script upgrade system to stable release
+#
+
+info " Upgrading and Updating System "
+
+# install tools
+$APT -y --force-yes install initramfs-tools firmware-linux firmware-linux-free util-linux-locales
+
+# update and upgrade system
+$APT upgrade -y
+aptitude -y full-upgrade
+
+# install test
+if [ -z $(which lsb_release) ]; then
+	echo "arepalinux warning: lsb-release is required"
+	$APT -y install lsb-release
+fi

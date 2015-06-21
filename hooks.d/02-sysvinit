@@ -1,0 +1,66 @@
+#!/bin/bash
+# 02-sysvinit
+#
+# This script remove systemd and install sysvinit
+#
+
+info " Removing Systemd utilities "
+
+# first, disable systemd from apt
+cat <<EOF > /etc/apt/preferences.d/systemd.pref
+Package: systemd-sysv
+Pin: release o=Debian
+Pin-Priority: -1
+
+Package: systemd
+Pin: origin ""
+Pin-Priority: -1
+
+Package: *systemd*
+Pin: origin ""
+Pin-Priority: -1
+EOF
+
+# update apt database
+$APT -y update
+
+if [ ! -z "`dpkg -l | grep -i 'systemd-sysv'`" ]; then
+
+  # install the SysV init packages
+  $APT -y install sysvinit-core sysvinit sysvinit-utils
+
+  # start with sysvinit
+  $SED -i -e "s/GRUB_CMDLINE_LINUX=\"\"/GRUB_CMDLINE_LINUX=\"init=\/sbin\/init\"/" /etc/default/grub
+
+  update-grub2
+
+WARN=$(cat << _MSG
+ ---------- [ Removing systemd ] ---------------
+
+  we are removing systemd-* from this system, 
+  we need to restart for apply changes.
+
+  please restart the installation when complete.
+  
+ ------------------------------------------------
+_MSG
+)
+echo "$WARN"
+
+reboot
+
+fi
+
+# remove systemd
+if [ -n "`dpkg -l | grep -i 'systemd-sysv'`" ]; then
+    $APT remove --purge --auto-remove systemd systemd-sysv
+fi
+
+#re-install bsdutils (devuan version)
+version=$(apt-cache policy bsdutils | grep devuan1 | tail -n1 | awk '{ print $2}')
+$APT -y install bsdutils=$version
+$APT remove --purge --auto-remove -y libsystemd0
+
+
+debug "Systemd was removed from this system!"
+

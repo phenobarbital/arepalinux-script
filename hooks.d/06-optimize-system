@@ -6,27 +6,35 @@
 
 # Agregar rc.local
 
-info "Optimize System"
+info "Optimizing System"
 
 cat <<EOF > /etc/rc.local
 #!/bin/sh -e
 #
 # rc.local
 #
-# optimizacion del disco
+# optimizing disk
 /bin/bash /sbin/optimicedisk.sh
+# kernel samepage merging
+/bin/echo 1 > /sys/kernel/mm/ksm/run
+/bin/echo 200 > /sys/kernel/mm/ksm/sleep_millisecs
+# cpu sampling factor
+if test -f /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
+then
+    echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor      
+fi
+# sharing Internet
+/sbin/share_internet
 exit 0
 EOF
 chmod a+x /etc/rc.local
 
-if [ "$MODE" = "server" ]; then
-cat <<EOF > /sbin/compartir_internet
-#!/bin/bash
+cat <<EOF > /sbin/share_internet
+#!/bin/bash -e
 iptables -I FORWARD -m physdev --physdev-is-bridged -j ACCEPT
 iptables -P FORWARD ACCEPT
 EOF
-chmod a+x /sbin/compartir_internet
-fi
+chmod a+x /sbin/share_internet
 
 # optimize disk settings
 install_package hdparm
@@ -35,6 +43,7 @@ cp files/optimicedisk.sh /sbin/optimicedisk.sh
 chmod a+x /sbin/optimicedisk.sh
 
 # network
+install_package ethtool
 cp files/pre-eth0.sh /sbin/pre-eth0.sh
 chmod a+x /sbin/pre-eth0.sh
 
@@ -43,12 +52,8 @@ cp files/eth0.sh /sbin/eth0.sh
 chmod a+x /sbin/eth0.sh
 
 # configure limits
+# configure limits
 cat <<EOF > /etc/security/limits.d/stack.conf
-# nofile
-root               soft    nofile            131072
-root               hard    nofile            131072
-*               soft    nofile            131072
-*               hard    nofile            131072
 # stack
 root            soft    stack            16384
 root            hard    stack            16384
@@ -56,8 +61,33 @@ root            hard    stack            16384
 *               hard    stack            16384
 EOF
 
+cat <<EOF > /etc/security/limits.d/nofile.conf
+# nofile
+root               soft    nofile            131072
+root               hard    nofile            131072
+*               soft    nofile            131072
+*               hard    nofile            131072
+EOF
+
+cat <<EOF > /etc/security/limits.d/core.conf
+# core
+root            hard    core            0
+*               hard    core            0
+EOF
+
+
+cat <<EOF > /etc/security/limits.d/memlock.conf
+# memlock
+root          soft    memlock        12582912
+root          hard   memlock        12582912
+EOF
+
 # disable core dumps
 if [ -z "`grep 'ulimit -S' /etc/profile`" ]; then
 	echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
 	echo "*	hard 		core 		0" >> /etc/security/limits.conf
 fi
+
+# copy new udev rules for ssd files
+cp files/66-ssd.rules /etc/udev/rules.d/
+cp files/51-android.rules /etc/udev/rules.d/

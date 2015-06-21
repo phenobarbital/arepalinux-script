@@ -4,7 +4,7 @@
 #  This script ensures that required kernel modules will be started
 #
 
-info "Enable specific Kernel Modules and drivers"
+info "Enabling specific Kernel Modules and drivers"
 
 install_package linux-headers-$(uname -r)
 
@@ -12,7 +12,7 @@ install_package linux-headers-$(uname -r)
 cpumodel=$(lscpu | grep Vendor | head -n1 | cut -d ':' -f2 | tr -d ' ')
 case "$cpumodel" in
     "GenuineIntel")
-        install_package intel-microcode;;
+        install_package intel-microcode iucode-tool;;
     "AuthenticAMD")
         install_package amd64-microcode;;
     *)
@@ -68,4 +68,3 @@ done
 
 # AMD and Intel especific options
 #TODO
-

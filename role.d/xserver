@@ -1,0 +1,47 @@
+#!/bin/bash
+# templates.d/xserver
+#
+# ================================================================================
+# Arepa Linux: Build and optimize a Server-Based Debian GNU/Linux appliance
+#
+# Copyright © 2013 Jesús Lara Giménez (phenobarbital) <jesuslarag@gmail.com>
+# Version: 0.1  
+#
+#    Developed by Jesus Lara (phenobarbital) <jesuslara@phenobarbital.info>
+#    https://github.com/phenobarbital/arepalinux-script
+#    
+#    License: GNU GPL version 3  <http://gnu.org/licenses/gpl.html>.
+#    This is free software: you are free to change and redistribute it.
+#    There is NO WARRANTY, to the extent permitted by law.
+# ================================================================================
+
+#
+# Template for install a basic Xorg Server
+# Version: 0.1
+#
+driver=$()
+
+install_xorg()
+{
+	hooks="$TEMPLATEDIR/xserver.d"
+	for f in $(find $hooks/* -maxdepth 1 -executable -type f ! -iname "*.md" ! -iname ".*" | sort --numeric-sort); do
+		. $f
+	done	
+}
+
+run() {
+	info " Installing a basic video XServer "
+	install_xorg
+    if [ $? -ne 0 ]; then
+		trap cleanup EXIT SIGHUP SIGINT SIGTERM
+		error "Failed to install Debian Xorg Server"
+		return 1
+    fi
+    info "Debian Xorg Server installed"
+	return 0
+}
+
+cleanup() {
+	apt-get clean
+	return 0
+}

@@ -1,13 +1,14 @@
 #!/bin/bash
 # 03-change-grub
 
-info "Update GRUB options"
+info "Updating GRUB options"
 
 options=`cat /etc/default/grub | grep madvise`
 
 # aplicar cambios al grub solo si no estan aplicados
 if [ -z "$options" ]; then
-	$SED -i -e "s/GRUB_CMDLINE_LINUX=\"\"/GRUB_CMDLINE_LINUX=\"${GRUB_FLAGS}\"/" /etc/default/grub
+	#$SED -i -e "s/GRUB_CMDLINE_LINUX=\"\"/GRUB_CMDLINE_LINUX=\"${GRUB_FLAGS}\"/" /etc/default/grub
+	$SED -i -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 ${GRUB_FLAGS}\"/" /etc/default/grub
 fi
 
 debug "Update grub configuration"

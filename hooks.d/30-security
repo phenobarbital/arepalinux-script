@@ -5,6 +5,13 @@
 #  in this system
 #
 
+info " Installing TCP wrappers "
+install_package tcpd
+
+if [ -z "`grep -F 'sshd: ALL' /etc/hosts.allow`" ]; then
+  echo 'sshd: ALL' >> /etc/hosts.allow
+fi
+
 info " Secure System "
 
 # set expiration date for common user
@@ -24,8 +31,6 @@ chmod 0754 /etc/profile /etc/login.defs /etc/init.d/rc
 echo 'root' > /etc/ftpusers
 echo 'nobody' >> /etc/ftpusers
 
-
-if [ "$MODE" == "server" ]; then
 # change default UMASK
 sed -i -e 's/^UMASK.*$/UMASK          027/' /etc/login.defs
 sed -i -e 's/^umask.*$/umask 027/' /etc/init.d/rc
@@ -37,41 +42,20 @@ echo "blacklist firewire-ohci" > /etc/modprobe.d/blacklist-firewire.conf
 if [ -z "`grep 'secure tmp' /etc/fstab`" ]; then
 cat <<EOF >> /etc/fstab
 # secure tmp
-tmpfs /tmp tmpfs nosuid,noexec,nodev,rw 0 0
+tmpfs /tmp tmpfs nosuid,nodev,rw 0 0
 EOF
 fi
 
 # disable reboot with CTRL+ALT+DEL, Don't allow any nut to kill the server
 sed -i -e 's/ca:12345:ctrlaltdel:\(.*\)/#ca:12345:ctrlaltdel:\1/' /etc/inittab
 
-if [ "$DISABLE_INTEGRITY" != 'yes' ]; then
+# install locate
+install_package locate
 
-info " Install Integrity tools (aide, tripwire) "
+warning "update locate database, please wait ..."
+updatedb
 
-# install aide (integrity tool)
-install_package aide aide-common
-sed -i "s/^MAILTO=root/MAILTO=$MAIL;/" /etc/default/aide
-sed -i -e "s/Checksums =.*$/Checksums = sha512+tiger/" /etc/aide/aide.conf
-# initialize database
-aide --config /etc/aide/aide.conf --init
-message "Generate first AIDE database, this will need several minutes, please wait"
-aideinit
-mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
-
-# install tripwire
-install_package tripwire
-info "Initialize tripwire database, press ENTER (no local key passphrase)"
-# initialize tripwire database
-tripwire -m i
-fi
-
-# install psad
-install_package psad
-
-sed -i "s/^EMAIL_ADDRESSES.*$/EMAIL_ADDRESSES             $MAIL;/" /etc/psad/psad.conf
-sed -i "s/^HOSTNAME.*$/HOSTNAME             $NAME;/" /etc/psad/psad.conf
-sed -i 's/^ENABLE_IPV6_DETECTION.*$/ENABLE_IPV6_DETECTION             NO;/' /etc/psad/psad.conf
-sed -i 's/^FW_MSG_SEARCH.*$/FW_MSG_SEARCH               DROP;\nFW_MSG_SEARCH               Shorewall:net2all:DROP:;\nFW_MSG_SEARCH Shorewall:net2fw:DROP:;/' /etc/psad/psad.conf
+#### security tools
 
 
 # install fail2ban
@@ -83,42 +67,71 @@ sed -i 's/^bantime.*$/bantime = 1200/' /etc/fail2ban/jail.conf
 
 service fail2ban restart
 
-# install rootkit tools
+#### install rootkit tools
 install_package chkrootkit rkhunter
 
-# install denyhosts
-install_package denyhosts
+# TODO: actualizar el rootkit hunter
+rkhunter --update && rkhunter --propupd
 
-sed -i -e 's/^PURGE_DENY.*$/PURGE_DENY = 72h/' /etc/denyhosts.conf
-sed -i -e "s/^ADMIN_EMAIL.*$/ADMIN_EMAIL = $MAIL/" /etc/denyhosts.conf
-sed -i -e 's/^#RESET_ON_SUCCESS.*$/RESET_ON_SUCCESS = yes/' /etc/denyhosts.conf
-sed -i -e 's/^#SYSLOG_REPORT=YES.*$/SYSLOG_REPORT=YES/' /etc/denyhosts.conf
-sed -i -e 's/^#SYNC_SERVER.*$/SYNC_SERVER = http:\/\/xmlrpc.denyhosts.net:9911/' /etc/denyhosts.conf
+cat <<EOF > /etc/cron.weekly/rkhunter.sh
+#!/bin/sh
+(
+/usr/bin/rkhunter --versioncheck
+/usr/bin/rkhunter --update
+/usr/bin/rkhunter --propupd
+/usr/bin/rkhunter --cronjob --report-warnings-only
+) | /bin/mail -s 'rkhunter Weekly Run ($SERVERNAME)' $MAIL
+EOF
+chmod +x /etc/cron.weekly/rkhunter.sh
 
-service denyhosts restart
+##### Antivirus
 
-if [ "$DISABLE_ANTIVIRUS" != 'yes' ]; then
-	info " Installing ClamAV Antivirus "
-	# install antivirus
-	install_package clamav clamav-daemon clamav-freshclam
+info " Installing ClamAV Antivirus "
+# install antivirus
+install_package clamav clamav-daemon clamav-freshclam libnet-dns-perl
+
+# update antivirus
+freshclam --config-file=/etc/clamav/freshclam.conf --verbose
+
+##### port scanners
+
+# install psad
+install_package psad
+
+sed -i "s/^EMAIL_ADDRESSES.*$/EMAIL_ADDRESSES             $MAIL;/" /etc/psad/psad.conf
+sed -i "s/^HOSTNAME.*$/HOSTNAME             $NAME;/" /etc/psad/psad.conf
+sed -i 's/^ENABLE_IPV6_DETECTION.*$/ENABLE_IPV6_DETECTION             NO;/' /etc/psad/psad.conf
+sed -i 's/^FW_MSG_SEARCH.*$/FW_MSG_SEARCH               DROP;\nFW_MSG_SEARCH               Shorewall:net2all:DROP:;\nFW_MSG_SEARCH Shorewall:net2fw:DROP:;/' /etc/psad/psad.conf
+
+service psad restart
+
+# actualizar semanalmente las reglas del psad
+cat <<EOF > /etc/cron.weekly/psad.sh
+#!/bin/bash
+# update psad
+psad --sig-update
+# reload psad
+psad -H
+EOF
+chmod +x /etc/cron.weekly/psad.sh
+
+if [ -z "`grep -F 'Legal information:' /etc/motd`" ]; then
+cat files/issue >> /etc/motd
+#echo "Legal Information:" >> /etc/motd
+#echo "This is a private system, all unauthorized access is prohibited" >> /etc/motd 
 fi
 
-fi
-
-if [ -z "`grep -F 'legal information:' /etc/motd`" ]; then
-echo "legal information:" >> /etc/motd
-echo "This is a private system, all unauthorized access is prohibited" >> /etc/motd 
-fi
-
-if [ -z "`grep -F 'legal information:' /etc/issue.net`" ]; then
-echo "legal information:" >> /etc/issue.net
-echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue.net
+if [ -z "`grep -F 'Legal information:' /etc/issue.net`" ]; then
+cat files/issue >> /etc/issue.net
+#echo "Legal Information:" >> /etc/issue.net
+#echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue.net
 fi
 
 if [ -z "`grep -F 'legal information:' /etc/issue`" ]; then
-echo "hostname:  \n tty: \l " >> /etc/issue
-echo "legal information:" >> /etc/issue
-echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue
+echo "Hostname:  \n tty: \l " >> /etc/issue
+cat files/issue >> /etc/issue
+#echo "Legal Information:" >> /etc/issue
+#echo "This is a private system, all unauthorized access is prohibited" >> /etc/issue
 fi
 
 # Passwords expire every 180 days
@@ -138,3 +151,7 @@ readonly TMOUT=900
 export TMOUT
 EOF
 chmod +x /etc/profile.d/os-security.sh
+
+# TODO enabling cracklib for passwords and pam_tally pam_tally2.so deny=3
+install_package libpam-cracklib
+# password requisite pam_cracklib.so try_first_pass retry=3 minlength=8 lcredit=1 ucredit=1 dcredit=1 ocredit=1 difok=4

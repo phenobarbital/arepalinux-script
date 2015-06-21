@@ -5,29 +5,13 @@
 # Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
 # términos de la Licencia Pública General de GNU (versión 3).
 
-info " Install basic software and utilities "
+info " Installing basic software and utilities "
 
-$APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx ethtool less screen tree curl wget telnet iputils-ping dnsutils lsof
-
-if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
-	install_package laptop-detect
-	if [ "$(laptop-detect)" -eq 0 ]; then
-		# We're a laptop/Notebook
-		install_package laptop-mode-tools task-laptop xorg-driver-synaptics
-	fi
-	# install basic Xorg
-	install_package xserver-xorg-video-fbdev xserver-xorg-core xserver-xorg xorg xserver-xorg-input-kbd xserver-xorg-input-evdev xserver-xorg-input-mouse
-fi
-
-if [ "$MODE" == "server" ]; then
-# configure NTP
-install_package ntp
-hwclock --systohc
-service ntp restart
-fi
+$APT -y install sudo locate rsync bash-completion wget tcpdump ntpdate finger links lynx less screen tree curl wget telnet iputils-ping dnsutils lsof patch irqbalance acpi-support lvm2 powermgmt-base
 
 # disable exim4
 aptitude -y purge exim4 exim4-daemon-light
+
 # configure postfix for local system
 install_package postfix
 
@@ -35,57 +19,3 @@ if [ -z "`grep 'inet_protocols' /etc/postfix/main.cf`" ]; then
 	echo 'inet_protocols = ipv4' >> /etc/postfix/main.cf
 fi
 sed -i -e "s/smtpd_banner.*$/smtpd_banner = $SERVERNAME ESMTP $DOMAIN/" /etc/postfix/main.cf
-
-if [[ "$MODE" = "workstation" || "$MODE" = "desktop" ]]; then
-
-# Prepare for Video Support
-info "Detecting Video Card information, please wait ..."
-
-# ejecutar
-mkfontdir /var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType
-
-# discover video display model
-videodriver=$(lspci -vv -s $(lspci | grep -E 'VGA|Display' | head -n1 | awk '{print $1}') | grep -F "Kernel driver" | cut -d ':' -f2 | tr -d ' ')
-if [ -z "$videodriver" ]; then
-	# kernel driver its not detected
-	if [ -n "$(lspci | grep -E 'VGA|Display' | head -n1 | cut -d ':' -f3 | grep -F 'Intel')" ]; then
-		videodriver="i915"
-	fi
-	if [ -n "$(lspci | grep -E 'VGA|Display' | head -n1 | cut -d ':' -f3 | grep -F 'AMD')" ]; then
-		videodriver="radeon"
-	fi
-	if [ -n "$(lspci | grep -E 'VGA|Display' | head -n1 | cut -d ':' -f3 | grep -F 'NVIDIA')" ]; then
-		videodriver="nouveau"
-	fi		
-fi
-
-case "$videodriver" in
-	"i915")
-		install_package xserver-xorg-video-intel
-		if [ -z "`grep 'modeset' /etc/default/grub`" ]; then
-			echo "INTEL_BATCH=1" >> /etc/environment
-			sed -i -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 $GRUB_INTEL\"/" /etc/default/grub
-			cp files/xorg/intel/* /usr/share/X11/xorg.conf.d/
-			echo "options i915 modeset=1" > /etc/modprobe.d/i915-kms.conf
-			echo "INTEL_BATCH=1" > /etc/environment
-		fi
-		;;
-	"radeon")
-		install_package xserver-xorg-video-radeon radeontool firmware-linux
-		if [ -z "`grep 'modeset' /etc/default/grub`" ]; then
-			sed -i -e "s/GRUB_CMDLINE_LINUX=\"\(.*\)\"/GRUB_CMDLINE_LINUX=\"\1 $GRUB_RADEON\"/" /etc/default/grub
-			cp files/xorg/radeon/* /usr/share/X11/xorg.conf.d/
-		fi
-		;;
-	"nouveau")
-		install_package xserver-xorg-video-nouveau
-		cp files/xorg/nvidia/* /usr/share/X11/xorg.conf.d/
-		;;
-	*)
-	error "unknown Video card $videodriver for Xorg configuration";;
-esac
-
-debug "Update grub configuration"
-# update grub
-/usr/sbin/update-grub
-fi

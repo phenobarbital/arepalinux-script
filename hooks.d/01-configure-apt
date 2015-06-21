@@ -18,9 +18,9 @@ rm -f /etc/apt/sources.list.d/*.list
 
 # generate new repositories
 if [ "$REPO_TYPE" == "local" ]; then
-mirror="file://$REPO_URL/debian/"
+	mirror="file://$REPO_URL/debian/"
 else
-mirror="http://$REPO_URL/debian/"
+	mirror="http://$REPO_URL/debian/"
 fi
 
 # oficial repositories
@@ -29,16 +29,52 @@ cat <<E_O_APT > /etc/apt/sources.list.d/$SUITE.list
 deb $mirror $SUITE $REPO_SECTIONS
 E_O_APT
 
+# devuan repositories
+if [ "$ENABLE_DEVUAN" == "yes" ]; then
+cat <<E_O_APT > /etc/apt/sources.list.d/devuan.list
+# Devuan
+deb http://packages.devuan.org/devuan/ $SUITE $REPO_SECTIONS
+E_O_APT
+fi
+
 # backport repositories
+if [ "$ENABLE_BACKPORTS" == "yes" ]; then
 cat <<E_O_APT > /etc/apt/sources.list.d/backports.list
 deb $mirror $SUITE-backports $REPO_SECTIONS
 E_O_APT
+cat <<E_O_APT >> /etc/apt/sources.list.d/devuan.list
+# Devuan Backports
+deb http://packages.devuan.org/devuan/ $SUITE-backports main
+E_O_APT
+fi
+
+if [ "$ENABLE_REMOTE" == "yes" ]; then
+# security and update repositories
+cat <<E_O_APT > /etc/apt/sources.list.d/remote.list
+# oficial
+deb http://$REMOTE_REPO/debian/ $SUITE main contrib non-free
+# updates
+deb http://$REMOTE_REPO/debian/ $SUITE-updates main
+E_O_APT
+# lowest priority to remote repository
+cat <<EOF > /etc/apt/preferences.d/remote.pref
+Package: *
+Pin: origin $REMOTE_REPO
+Pin-Priority: 100
+EOF
+fi
+
+if [ "$APT_UPDATES" == "yes" ]; then
+# security and update repositories
+cat <<E_O_APT > /etc/apt/sources.list.d/updates.list
+# updates
+deb $mirror $SUITE-updates main
+E_O_APT
+fi
 
 if [ "$APT_SECURITY" == "yes" ]; then
 # security and update repositories
 cat <<E_O_APT > /etc/apt/sources.list.d/security.list
-# updates
-deb $mirror $SUITE-updates main
 # security
 deb http://security.debian.org/ $SUITE/updates main
 E_O_APT
@@ -48,53 +84,62 @@ cat <<EOF > /etc/apt/apt.conf.d/80-update
 Acquire::Check-Valid-Until "false";
 EOF
 
+cat <<EOF > /etc/apt/apt.conf.d/10-Debian
+Acquire::Language "none";
+Acquire::PDiffs  "false";
+APT::Install-Recommends  "false";
+APT::Get::AutomaticRemove  "true";
+APT::Clean-Installed  "true";
+EOF
+
 cat <<EOF > /etc/apt/preferences.d/$SUITE.pref
 Package: *
-Pin: release n=$SUITE
-Pin-Priority: 200
-
+Pin: origin ""
+Pin-Priority: 1001
+    
 Package: *
-Pin: release n=$SUITE-updates
-Pin-Priority: 999
+Pin: release n=$SUITE
+Pin-Priority: 300
 
 Package: *
 Pin: release n=$SUITE-backports
-Pin-Priority: 100
-
+Pin-Priority: 250
 EOF
 
-cat <<EOF > /etc/apt/apt.conf.d/10-$DIST
-Acquire::PDiffs "false";
-APT::Default-Release "stable";
-APT::Clean-Installed "true";
-APT::Get:AutomaticRemove "true";
-APT::Get::HideAutoRemove "false";
-APT::Get:Show-Upgraded "true";
-EOF
+if [ "$ENABLE_DEVUAN" == "yes" ]; then
+cat <<EOF > /etc/apt/preferences.d/devuan.pref
+Package: *
+Pin: release o=Devuan
+Pin-Priority: 700
 
-if [ "$APT_RECOMMENDS" == "yes" ]; then
-cat <<EOF > /etc/apt/apt.conf.d/90-recommends
-APT::Install-Recommends "true";
+Package: *
+Pin: origin packages.devuan.org
+Pin-Priority: 700
+
+Package: *
+Pin: release o=Debian
+Pin-Priority: 500
 EOF
 fi
+
+debug "Updating APT database"
+$APT -y update
 
 #
 #  Now that the sources have been setup make sure the system is up to date.
 #
-debug "updating APT database"
-$APT update
-
-# install keyring list
-debug "install Debian keyrings"
+# install keyring list ####
+debug "Installing Debian Keyrings"
 $APT -y install $KEYRINGS
-	
-# update and upgrade system
-debug "upgrade system"
-$APT upgrade -y
-aptitude -y full-upgrade
 
-# install test
-if [ -z $(which lsb_release) ]; then
-	echo "arepalinux warning: lsb-release is required"
-	$APT -y install lsb-release
+if [ "$ENABLE_DEVUAN" == "yes" ]; then
+	debug "Install Devuan keyring"
+	$APT -y --force-yes install devuan-keyring
+	$APT -y update
 fi
+
+# upgrade system
+debug "Upgrading System"
+$APT -y --force-yes install apt
+$APT -y upgrade
+$APT -y --force-yes install aptitude

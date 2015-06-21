@@ -1,0 +1,138 @@
+#!/bin/bash
+# 20-firewall
+#
+#  Install and configure Shorewall firewall
+#
+# Este programa es software libre. Puede redistribuirlo y/o modificarlo bajo los
+# términos de la Licencia Pública General de GNU (versión 3).
+
+info " install and configure shoreline Firewall "
+
+install_package shorewall
+
+# enable shorewall
+sed -i -e "s/startup=0/startup=1/" /etc/default/shorewall
+
+# first enabled interface
+interfaces=$(ip addr | grep mtu | awk '{print $2}'| cut -d ':' -f1)
+firstiface=$(ip addr | grep mtu | awk '{print $2}'| grep -v "lo:" | cut -d ':' -f1 | head -n1)
+netmask=$(get_netmask $firstiface)
+ip=$(get_ip $firstiface)
+network=$(get_network $ip $netmask)
+octet=$(get_subnet $firstiface)
+subnet="$network/$octet"
+
+# configure shorewall
+cat > /etc/shorewall/interfaces << EOF
+############################################################################
+# Shorewall interfaces
+?FORMAT 2
+#ZONE   INTERFACE   OPTIONS
+## LAN Zone
+lan     lan0            routefilter,routeback,tcpflags,bridge,nosmurfs,logmartians,sourceroute=0
+## DMZ Zone
+loc     loc0            routefilter,routeback,bridge,logmartians,sourceroute=0
+EOF
+# loc es un bridge, conectado a los LXC containers
+# lan es la red interna de la interfaz que nos conecta a Internet (ej: eth0)
+
+cat > /etc/shorewall/zones << EOF
+############################################################################
+# Shorewall Zones
+#ZONE   TYPE    OPTIONS         IN          OUT
+#                   OPTIONS         OPTIONS
+fw  firewall
+lan ipv4
+loc ipv4
+EOF
+
+cat > /etc/shorewall/masq << EOF
+############################################################################
+# Shorewall Masq
+#INTERFACE    SUBNET
+lan0          172.16.30.0/24
+EOF
+# Esto permite que la red LAN salga a Internet de manera directa y enmascarada (Forward masquerading)
+
+cat > /etc/shorewall/policy << EOF
+############################################################################
+# shorewall policies
+#SOURCE     DEST        POLICY      LOG LEVEL   LIMIT:BURST
+fw     lan     ACCEPT
+fw     loc     ACCEPT
+# acceso desde lan
+lan     fw      ACCEPT
+lan     loc     ACCEPT
+# The FOLLOWING POLICY MUST BE LAST
+all     all     DROP      info
+EOF
+
+sshport=$(cat /etc/ssh/sshd_config | grep Port | cut -d ' ' -f2)
+
+cat > /etc/shorewall/rules << EOF
+#ACTION     SOURCE  DEST    PROTO   DEST   SOURCE  ORIGINAL RATE   USER/  MARK
+#                                   PORT   PORT(S) DEST     LIMIT  GROUP
+#
+# Accept NTP udp
+ACCEPT    all     fw    udp     123
+# SSH Access
+ACCEPT    all     fw    tcp     $sshport    -    -   2/min:3
+
+# Accept PING
+Ping(ACCEPT)     all     fw
+Ping(ACCEPT)     all     lan
+Ping(ACCEPT)     all     loc
+EOF
+
+cat > /etc/shorewall/routestopped  << EOF
+#                                                                                      
+# Shorewall version 4 - Routestopped File
+#
+# For information about entries in this file, type "man shorewall-routestopped"
+#
+# The manpage is also online at
+# http://www.shorewall.net/manpages/shorewall-routestopped.html
+#
+# See http://shorewall.net/starting_and_stopping_shorewall.htm for additional
+# information.
+#
+###############################################################################
+#INTERFACE  HOST(S)         OPTIONS     PROTO   DEST    SOURCE
+#                               PORT(S) PORT(S)
+### allow lan subnet
+lan0       $subnet
+### allow loc dmz
+loc0        -               routeback
+
+EOF
+
+cat > /etc/shorewall/start  << EOF
+#
+# Shorewall version 4 - Start File
+#
+# /etc/shorewall/start
+#
+#   Add commands below that you want to be executed after shorewall has
+#   been started or restarted.
+#
+# See http://shorewall.net/shorewall_extension_scripts.htm for additional
+# information.
+#
+###############################################################################
+run_iptables -A POSTROUTING -t mangle -p udp --dport bootpc -j CHECKSUM --checksum-fill
+run_iptables -I FORWARD -m physdev --physdev-is-bridged -j ACCEPT
+return 0 
+
+EOF
+
+# - deshabilitar ipv6
+if [ "$DISABLE_IPV6" == 'yes' ]; then
+    sed -i "s/^DISABLE_IPV6=.*$/DISABLE_IPV6=Yes/" /etc/shorewall/shorewall.conf
+fi
+
+# - integrate with fail2ban
+sed -i "s/^BLACKLISTNEWONLY=.*$/BLACKLISTNEWONLY=No/" /etc/shorewall/shorewall.conf
+
+# - habilitar ip-forwarding:
+sed -i "s/^IP_FORWARDING=.*$/IP_FORWARDING=On/" /etc/shorewall/shorewall.conf
+sed -i "s/^OPTIMIZE=.*$/OPTIMIZE=8/" /etc/shorewall/shorewall.conf

@@ -24,16 +24,14 @@ sed -i 's/^#port.*$/port=53/' /etc/dnsmasq.conf
 sed -i 's/^#domain-needed/domain-needed/' /etc/dnsmasq.conf
 sed -i 's/^#bogus-priv/bogus-priv/' /etc/dnsmasq.conf
 sed -i 's/^#resolv-file=.*$/resolv-file=\/etc\/resolv.dnsmasq/' /etc/dnsmasq.conf
+sed -i 's/^#bogus-priv/bogus-priv/' /etc/dnsmasq.conf
+sed -i 's/^#resolv-file=.*$/resolv-file=\/etc\/resolv.dnsmasq/' /etc/dnsmasq.conf
 
 # configure user and group
 sed -i 's/^#user=.*$/user=dnsmasq/' /etc/dnsmasq.conf
 sed -i 's/^#group=.*$/group=dnsmasq/' /etc/dnsmasq.conf
 
-# enable config dir
-sed -i 's/^#conf-dir=\(.*\)/conf-dir=\1 /' /etc/dnsmasq.conf
-
 cat <<EOF > /etc/dnsmasq.d/local.conf
-domain=$DOMAIN
 dns-forward-max=150
 cache-size=1000
 neg-ttl=3600
@@ -42,20 +40,31 @@ chown dnsmasq.dnsmasq /etc/dnsmasq.d -R
 
 # generate a resolv.dnsmasq
 cat <<EOF > /etc/resolv.dnsmasq
-domain $DOMAIN
 search $DOMAIN
 # nameservers
+nameserver 8.8.8.8
 EOF
 chown dnsmasq.dnsmasq /etc/resolv.dnsmasq
-# fill resolv.dnsmasq
-cat /etc/resolv.conf | grep nameserver >> /etc/resolv.dnsmasq
 
 # generate a resolv.conf
 cat <<EOF > /etc/resolv.conf
-domain $DOMAIN
 search $DOMAIN
 nameserver 127.0.0.1
+# fallback DNS
+nameserver 8.8.8.8
 EOF
+# securing resolv.conf
+chattr +i /etc/resolv.conf
+# TODO: configurar resolvconf
+
+# enable config dir
+cat <<EOF >> /etc/dnsmasq.conf
+# Include another lot of configuration options.
+#conf-file=/etc/dnsmasq.more.conf
+conf-dir=/etc/dnsmasq.d 
+EOF
+
+
 
 fi # which dnsmasq
 fi # enable dns-cache

@@ -115,10 +115,10 @@ hooksdir()
 
 roledir()
 {
-		if [ -d "/usr/share/arepalinux/roles.d" ]; then
-			ROLEDIR="/usr/share/arepalinux/roles.d"
+		if [ -d "/usr/share/arepalinux/role.d" ]; then
+			ROLEDIR="/usr/share/arepalinux/role.d"
 		else
-			ROLEDIR="./roles.d"
+			ROLEDIR="./role.d"
 		fi
 }
 
@@ -128,7 +128,6 @@ show_summary()
 SUMMARY=$(cat << _MSG
  ---------- [ Summary options for Installation ] ---------------
 
-  Mode : .......................... $MODE  
   Name : .......................... $NAME
   ServerName : .................... $SERVERNAME
   RootFS : ........................ $ROOTFS
@@ -136,11 +135,6 @@ SUMMARY=$(cat << _MSG
   Distribution : .................. $DIST
   Suite : ......................... $SUITE
   Domain : ........................ $DOMAIN
-  Interface : ..................... $LAN_INTERFACE
-  IP : ............................ $LAN_IPADDR
-  Gateway : ....................... $GATEWAY
-  Netmask : ....................... $NETMASK
-  Network : ....................... $NETWORK
   SSH Port : ...................... $SSH_PORT
  ---------------------------------------------------------------
 _MSG
@@ -158,11 +152,10 @@ sshport=$(cat /etc/ssh/sshd_config | grep Port | cut -d ' ' -f2)
 SUMMARY=$(cat << _MSG
  ---------- [ Status of Installation ] ---------------
 
-  Mode : .......................... $MODE  
+  Mode : .......................... Server
   Name : .......................... $NAME
   ServerName : .................... $SERVERNAME
   SSH Port : ...................... $sshport
-  IP : ............................ $LAN_IPADDR
    
  ---------------------------------------------------------------
 _MSG
@@ -237,6 +230,14 @@ install_package()
 	DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get --option Dpkg::Options::="--force-overwrite" --option Dpkg::Options::="--force-confold" --yes --force-yes install "$@"
 }
 
+is_installed()
+{
+	pkg="$@"
+	if [ -z "$pkg" ]; then
+		echo `dpkg -l | grep -i $pkg | awk '{ print $2}'}`
+	fi
+	return 0
+}
 ### network functions
 
 ifdev() {
@@ -306,6 +307,6 @@ mask2cidr() {
 }
 
 get_subnet() {
-	MASK=`get_netmask`
+	MASK=`get_netmask $1`
 	echo $(mask2cidr $MASK)
 }

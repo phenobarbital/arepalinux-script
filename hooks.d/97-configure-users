@@ -20,28 +20,3 @@ adduser $SUPPORT sudo
 
 # expiration password (1 year)
 chage -M 365 $SUPPORT
-
-# == Configure pam.access ==
-
-if [ "$MODE" = "server" ]; then
-
-if [ -z "`grep 'permitir' /etc/security/access.conf`" ]; then
-cat <<EOF >> /etc/security/access.conf
-# permitir exclusivamente accesos locales a root
-+ : root : cron crond :0 tty1 tty2 tty3 tty4 tty5 tty6
-+ : root : 127.0.0.1
-- : root : ALL
-
-# permitir accesos a los grupos $SUPPORT y sudo
-+ : @sudo @$SUPPORT : cron crond :0 tty1 tty2 tty3 tty4 tty5 tty6
-+ : @sudo @$SUPPORT : 127.0.0.0/24
-+ : @sudo @$SUPPORT : 192.168.0.0/24
-+ : @sudo @$SUPPORT : 172.16.30.0/24
-- : @sudo @$SUPPORT : ALL
-
-# no aceptar accesos a mas nadie
-- : ALL : ALL
-EOF
-fi
-
-fi
