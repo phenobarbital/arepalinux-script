@@ -6,6 +6,12 @@ servers, appliances y high-end Debian workstations.
 
 installs, configures and optimizes a Debian system in a few minutes.
 
+Features
+--------
+
+- Installs a Debian Jessie (last stable) system
+- Clean of all systemd- related packages using Devuan packages
+
 Dependencies
 ------------
 
