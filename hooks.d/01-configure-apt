@@ -116,15 +116,15 @@ Pin-Priority: 500
 EOF
 fi
 
+debug "Updating APT database"
+$APT -y update
+
 #
 #  Now that the sources have been setup make sure the system is up to date.
 #
 # install keyring list ####
 debug "Installing Debian Keyrings"
 $APT -y install $KEYRINGS
-
-debug "Updating APT database"
-$APT -y update
 
 if [ "$ENABLE_DEVUAN" == "yes" ]; then
 	debug "Install Devuan keyring"

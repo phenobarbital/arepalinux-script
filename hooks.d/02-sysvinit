@@ -40,7 +40,7 @@ WARN=$(cat << _MSG
   we are removing systemd-* from this system, 
   we need to restart for apply changes.
 
-  restart installation when complete.
+  please restart the installation when complete.
   
  ------------------------------------------------
 _MSG
@@ -51,12 +51,16 @@ reboot
 
 fi
 
-if [ ! -z "`dpkg -l | grep -i 'systemd-sysv'`" ]; then
 # remove systemd
-  $APT remove --purge --auto-remove systemd systemd-sysv
-  #remove libsystemd0
-  version=$(apt-cache policy bsdutils | grep devuan1 | tail -n1 | awk '{ print $2}')
-  $APT -y install bsdutils=$version
-  $APT remove --purge --auto-remove libsystemd0
-  debug "Systemd has been removed!"
+if [ -n "`dpkg -l | grep -i 'systemd-sysv'`" ]; then
+    $APT remove --purge --auto-remove systemd systemd-sysv
 fi
+
+#re-install bsdutils (devuan version)
+version=$(apt-cache policy bsdutils | grep devuan1 | tail -n1 | awk '{ print $2}')
+$APT -y install bsdutils=$version
+$APT remove --purge --auto-remove libsystemd0
+
+
+debug "Systemd was removed from this system!"
+
