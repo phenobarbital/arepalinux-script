@@ -92,7 +92,6 @@ TEMPLATE=''
 HOSTNAME=''
 SERVERNAME=''
 STEP=''
-MODE='desktop'
 DEBUG='false'
 
 usage() {

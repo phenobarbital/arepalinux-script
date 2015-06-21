@@ -128,7 +128,6 @@ show_summary()
 SUMMARY=$(cat << _MSG
  ---------- [ Summary options for Installation ] ---------------
 
-  Mode : .......................... $MODE  
   Name : .......................... $NAME
   ServerName : .................... $SERVERNAME
   RootFS : ........................ $ROOTFS
