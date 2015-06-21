@@ -91,7 +91,7 @@ chmod +x /etc/cron.weekly/rkhunter.sh
 
 info " Installing ClamAV Antivirus "
 # install antivirus
-install_package clamav clamav-daemon clamav-freshclam libnet-dns-perl
+install_package clamav clamav-daemon clamav-freshclam libnet-dns-perl iproute
 
 # update antivirus
 freshclam --config-file=/etc/clamav/freshclam.conf --verbose

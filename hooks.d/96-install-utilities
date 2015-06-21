@@ -8,7 +8,7 @@
 info " Configure utilities "
 
 # install and configure vim
-install_package vim
+install_package vim vim-scripts
 
 ## configure vim
 cp files/vimrc.local /etc/vim/vimrc.local

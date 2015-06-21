@@ -29,10 +29,11 @@ cat > /etc/shorewall/interfaces << EOF
 ?FORMAT 2
 #ZONE   INTERFACE   OPTIONS
 ## LAN Zone
-lan     lan0            routefilter,routeback,tcpflags,bridge,nosmurfs,logmartians,sourceroute=0
+lan     lan0            routefilter,routeback,blacklist,tcpflags,bridge,nosmurfs,logmartians,sourceroute=0
 ## DMZ Zone
 loc     loc0            routefilter,routeback,bridge,logmartians,sourceroute=0
 EOF
+
 # loc es un bridge, conectado a los LXC containers
 # lan es la red interna de la interfaz que nos conecta a Internet (ej: eth0)
 
@@ -125,14 +126,50 @@ return 0
 
 EOF
 
+cat > /etc/shorewall/started  << EOF
+#
+# Shorewall version 4 - Started File
+#
+# /etc/shorewall/started
+#
+#   Add commands below that you want to be executed after shorewall has
+#   been completely started or restarted. The difference between this
+#   extension script and /etc/shorewall/start is that this one is invoked
+#   after delayed loading of the blacklist (DELAYBLACKLISTLOAD=Yes) and
+#   after the 'shorewall' chain has been created (thus signaling that the
+#   firewall is completely up).
+#
+#   This script should not change the firewall configuration directly but
+#   may do so indirectly by running /sbin/shorewall with the 'nolock'
+#   option.
+#
+# See http://shorewall.net/shorewall_extension_scripts.htm for additional
+# information.
+#
+###############################################################################
+
+EOF
+
+cat > /etc/shorewall/blacklist  << EOF
+#
+# Shorewall version 4 - Start File
+#
+# /etc/shorewall/start
+#
+
+-                       udp             1024:1033,1434
+-                       tcp             1433,1434,2401,2745,3127,3306,3410,4899,5554,6101,8081,9898
+
+EOF
+
 # - deshabilitar ipv6
 if [ "$DISABLE_IPV6" == 'yes' ]; then
     sed -i "s/^DISABLE_IPV6=.*$/DISABLE_IPV6=Yes/" /etc/shorewall/shorewall.conf
 fi
 
-# - integrate with fail2ban
-sed -i "s/^BLACKLISTNEWONLY=.*$/BLACKLISTNEWONLY=No/" /etc/shorewall/shorewall.conf
-
 # - habilitar ip-forwarding:
 sed -i "s/^IP_FORWARDING=.*$/IP_FORWARDING=On/" /etc/shorewall/shorewall.conf
 sed -i "s/^OPTIMIZE=.*$/OPTIMIZE=8/" /etc/shorewall/shorewall.conf
+
+# updating configuration
+shorewall update
