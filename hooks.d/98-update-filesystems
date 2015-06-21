@@ -8,57 +8,63 @@ info " Update and optimize filesystems "
 
 # hacer una copia de seguridad del fstab
 if [ ! -f "/etc/fstab.orig" ]; then
-	cp -p /etc/fstab /etc/fstab.orig
+    cp -p /etc/fstab /etc/fstab.orig
 fi
 
-# optimize all filesystem flags
-awk -v f="$EXT4_FLAGS" '/ext4/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
+# getting boot line
+p_boot=$(cat /etc/fstab.orig | grep -E "\/boot " | grep -v "^#" | awk '{ print $1}')
+# getting root line
+p_root=$(cat /proc/cmdline | grep -no 'root=[^"]*' | grep -Po 'UUID=[^"]*' | awk '{ print $1}')
+
+# first: optimize EXT4 filesystem flags
+awk -v f="$EXT4_FLAGS" '/ ext4 /{$4=f}{print}' /etc/fstab.orig > /etc/fstab.bak
 cp -p /etc/fstab.bak /etc/fstab
 
-awk -v f="$XFS_FLAGS" '/xfs/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
-cp -p /etc/fstab.bak /etc/fstab
+# second: optimize XFS flags:
+awk -v f="$XFS_FLAGS" '/ xfs /{$4=f}{print}' /etc/fstab.bak > /etc/fstab.bak2
+mv /etc/fstab.bak2 /etc/fstab.bak
 
-awk -v f="$EXT4_FLAGS,$ROOT_FLAGS" '/\/ /{$4=f}{print}' /etc/fstab > /etc/fstab.bak
-cp -p /etc/fstab.bak /etc/fstab
+# optimizing only boot flags:
+awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" -v pattern="$p_boot" '$1 ~ pattern {$4=f}{ print }' /etc/fstab.bak > /etc/fstab.bak2
+mv /etc/fstab.bak2 /etc/fstab.bak
 
-# umount and optimice boot
-BOOT=$(cat /etc/mtab | grep "/boot " | awk '{print $1}')
-if [ ! -z "$BOOT" ]; then
-# check BOOT
-umount $BOOT
-e2fsck -f $BOOT
+# optimizing only root flags:
+awk -v f="$EXT4_FLAGS,$ROOT_FLAGS" -v pattern="$p_root" '$1 ~ pattern {$4=f}{ print }' /etc/fstab.bak > /etc/fstab.bak2
+mv /etc/fstab.bak2 /etc/fstab.bak
+
+# umount and check boot
+fs_boot=$(blkid -U $(echo $p_boot | cut -d '=' -f 2))
+
+# umount recursively
+grep "/boot" /proc/mounts | cut -f2 -d" " | sort -r | xargs umount -f
+
+# checking /boot
+e2fsck -f $fs_boot
 # convert to ext4
-tune2fs -O extents,uninit_bg,dir_index $BOOT
+tune2fs -O extents,uninit_bg,dir_index $fs_boot
 # disable journal
-tune2fs -O ^has_journal $BOOT
-# cambiar el fstab a ext4
-sed -i -e "/\/boot/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
-# change boot filesystem flags
-awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" '/\/boot/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
-cp -p /etc/fstab.bak /etc/fstab
-e2fsck -fDC0 $BOOT
-fi
+tune2fs -O ^has_journal $fs_boot
+# last check
+e2fsck -fDC0 $fs_boot
 
-# check HOME
-HOME=$(cat /etc/mtab | grep "/home " | awk '{print $1}')
-fshome=$(cat /etc/mtab | grep "/home " | awk '{print $3}')
-if [ ! -z "$BOOT" ]; then
-umount $HOME
-if [ "$fshome" == 'ext4' ]; then
-e2fsck -f $HOME
-# convert to ext4
-tune2fs -O extents,uninit_bg,dir_index $HOME
-# cambiar el fstab a ext4 (de estar en ext3)
-sed -i -e "/\/home/ s/ext3/ext4/;/\// s/ext3/ext4/;s/ext2/ext4/" /etc/fstab
-# change filesystem flags
-awk -v f="$EXT4_FLAGS,$BOOT_FLAGS" '/\/home/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
 cp -p /etc/fstab.bak /etc/fstab
-e2fsck -fDC0 $HOME
-else
-awk -v f="$XFS_FLAGS" '/\/home/{$4=f}{print}' /etc/fstab > /etc/fstab.bak
-cp -p /etc/fstab.bak /etc/fstab
-fi
-fi
 
-# remount filesystem
+# remount
 mount -a
+
+# force checking filesystem on reboot
+touch /forcefsck
+sed -ie 's/^[#]FSCKFIX=no$/FSCKFIX=yes/' /etc/default/rcS
+
+WARN=$(cat << _MSG
+ ---------- [ Checking Filesystem ] ---------------
+
+  root and boot filesystem will be checked on
+  next reboot.
+  
+  Remove file /forcefsck to cancel.
+  
+ ------------------------------------------------
+_MSG
+)
+echo "$WARN"
