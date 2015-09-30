@@ -101,6 +101,8 @@ freshclam --config-file=/etc/clamav/freshclam.conf --verbose
 # install psad
 install_package psad
 
+# TODO: repair psad bug
+
 sed -i "s/^EMAIL_ADDRESSES.*$/EMAIL_ADDRESSES             $MAIL;/" /etc/psad/psad.conf
 sed -i "s/^HOSTNAME.*$/HOSTNAME             $NAME;/" /etc/psad/psad.conf
 sed -i 's/^ENABLE_IPV6_DETECTION.*$/ENABLE_IPV6_DETECTION             NO;/' /etc/psad/psad.conf
